@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Direction 15: The Shoebox</title>
+<link rel="stylesheet" href="kit/tokens.css">
+<link rel="stylesheet" href="kit/app.css">
+<style>
+/* Direction 15, The Shoebox.
+   Message: too small for big accounting software? Penny collects your receipts and keeps them in one place for tax time.
+   Customer: a solo owner or a team of 1 to 3, a year of receipts in a box, afraid any real tool needs a bookkeeper or a team to run;
+   the accountant's first email, January to April (research angle 1, ad bank B7 with B6).
+   Idea: one drawn shoebox stays pinned for the whole page and empties as you read; each section is one receipt that came out of it,
+   landing on its charge. The box is the before, the filed list in the real app screen is the after.
+   Structure: header; the pinned shoebox with Penny beside it (first, from the top); headline, line, Start free, free line, proof;
+   the filed list (app screen); three sections, one receipt slip each (card alerts, jobs with Penny's job ask, tax time with the IRS
+   line); close "At tax time, it is all filed." with F10 and Start free; the motion line. Phone: the box pins to the top of the screen
+   while the rest scrolls under it. 900 px and up: the box and the filed list pin together in the left column, the words scroll right.
+   Motion: moves on scroll. Each section lifts its receipt out of the box; the filed list starts as three charges with no receipt and
+   fills one per section. With Reduce Motion or JavaScript off the page shows the end state: an empty box and the full list.
+   Proposed tokens:
+   --p-kraft #C89B5E / dark #8A6A42: the box front, plain cardboard, so the "before" reads as a real shoebox, not a brand shape.
+   --p-kraft-side #AE8148 / dark #6F5434: the right side face, one step darker for depth.
+   --p-kraft-lid #D8B27C / dark #9C7B52: the open lid, lighter because it faces the light.
+   --p-kraft-in #6E5130 / dark #2E2416: the inside of the box, dark so an empty box reads as empty at a glance.
+   --p-kraft-line #8A6637 / dark #4E3C25: the box's drawn edges and the hand-written label.
+   --p-h1: 34 px on the phone, 60 px at 1440 (the right column is narrower than the page), tight (-0.03em), two clean lines at both widths.
+   --p-band: 156 px, the pinned box band on the phone (box 196 px wide), so 75% of the screen stays for reading.
+   --p-slip-r: -4deg, the tilt of each landed receipt; paper slips use --paper, --paper-ink and --paper-muted.
+   --p-lift: 700 ms cubic-bezier(.2,.8,.2,1), one receipt leaving the box or landing on its charge.
+   Colours otherwise from the token file; dark mode uses its dark set. No external requests. */
+:root {
+  --p-kraft: #c89b5e; --p-kraft-side: #ae8148; --p-kraft-lid: #d8b27c; --p-kraft-in: #6e5130; --p-kraft-line: #8a6637;
+  --p-h1: clamp(2.125rem, 1.4rem + 3vw, 4rem);
+  --p-band: 156px;
+  --p-slip-r: -4deg;
+  --p-lift: 700ms cubic-bezier(.2, .8, .2, 1);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --p-kraft: #8a6a42; --p-kraft-side: #6f5434; --p-kraft-lid: #9c7b52; --p-kraft-in: #2e2416; --p-kraft-line: #4e3c25; }
+}
+:root[data-theme="dark"] { --p-kraft: #8a6a42; --p-kraft-side: #6f5434; --p-kraft-lid: #9c7b52; --p-kraft-in: #2e2416; --p-kraft-line: #4e3c25; }
+
+body { line-height: 1.55; }
+.wrap { max-width: var(--page); margin: 0 auto; padding: 0 var(--gutter); }
+
+/* Header */
+.head { display: flex; align-items: center; gap: 12px; height: 60px; }
+.brand { display: flex; align-items: center; gap: 8px; font-weight: 700; text-decoration: none; letter-spacing: -0.01em; }
+.brand svg { width: 20px; height: 20px; }
+.nav { display: none; margin-left: auto; gap: 28px; }
+.nav a { text-decoration: none; color: var(--ink-2); font-size: var(--fs-small); font-weight: 500; }
+.nav a:hover { color: var(--ink); }
+.head-act { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; background: var(--brand); color: var(--on-brand);
+  text-decoration: none; font-weight: 600; border-radius: var(--r-full); }
+.btn:hover { background: var(--brand-strong); }
+.btn-s { height: 36px; padding: 0 16px; font-size: var(--fs-small); }
+.btn-l { height: 52px; padding: 0 28px; font-size: 1.0625rem; width: 100%; }
+.menu { width: 40px; height: 40px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 50%; background: var(--canvas); color: var(--ink); }
+.menu svg { width: 20px; height: 20px; }
+
+/* Hero words */
+.hero { padding: 20px 0 18px; }
+h1 { font-size: var(--p-h1); line-height: 1.04; letter-spacing: -0.03em; font-weight: 750; }
+.nb { white-space: nowrap; }
+.lead { margin-top: 14px; font-size: var(--fs-lead); color: var(--ink-2); max-width: 34em; }
+.cta { margin-top: 20px; display: grid; gap: 8px; justify-items: start; }
+.free { font-size: var(--fs-small); color: var(--ink-2); }
+.proof { margin-top: 12px; font-size: var(--fs-micro); color: var(--ink-2); max-width: 30em; }
+
+/* The pinned shoebox */
+.band { position: sticky; top: 0; z-index: 5; height: var(--p-band); background: var(--canvas);
+  margin: 0 calc(-1 * var(--gutter)); padding: 0 var(--gutter); border-bottom: 1px solid var(--line);
+  display: flex; align-items: flex-end; justify-content: center; gap: 4px; }
+.box { width: 196px; height: auto; overflow: visible; }
+.band .penny { width: 64px; height: 64px; margin-bottom: 10px; }
+.box .lid { fill: var(--p-kraft-lid); stroke: var(--p-kraft-line); stroke-width: 2; stroke-linejoin: round; }
+.box .inside { fill: var(--p-kraft-in); }
+.box .front { fill: var(--p-kraft); stroke: var(--p-kraft-line); stroke-width: 2; stroke-linejoin: round; }
+.box .side { fill: var(--p-kraft-side); stroke: var(--p-kraft-line); stroke-width: 2; stroke-linejoin: round; }
+.box .tag { fill: var(--paper); stroke: var(--p-kraft-line); stroke-width: 1.5; }
+.box .tag-t { fill: var(--paper-ink); font: 600 13px var(--font); letter-spacing: 0.12em; }
+.box .strip path { fill: var(--paper); stroke: var(--paper-muted); stroke-width: 1.5; stroke-linejoin: round; }
+.box .strip line { stroke: var(--paper-muted); stroke-width: 3; stroke-linecap: round; opacity: 0.55; }
+/* End state (no JavaScript, Reduce Motion): the box is empty. */
+.box .strip { opacity: 0; }
+
+/* The filed list: the real app screen */
+.filed { padding: 22px 0 8px; }
+.filed .rh-app { margin: 0 auto; }
+
+/* The filed list: static = end state (filed); live = charges waiting, one fills per section */
+.pin .a-card .no, .pin .a-card .a-dot { display: none; }
+.live .pin .a-card:not(.on) { background: var(--canvas); border-color: var(--line); }
+.live .pin .a-card:not(.on) svg, .live .pin .a-card:not(.on) .got { display: none; }
+.live .pin .a-card:not(.on) .no, .live .pin .a-card:not(.on) .a-dot { display: inline; }
+.live .pin .a-card:not(.on) .a-dot { display: inline-block; }
+.rh-app .a-tab { font-size: max(11.5px, 0.77em); } /* website floor 11 px, with room for rounding */
+/* One receipt per section */
+.out { padding: var(--section) 0 0; }
+.out h2 { font-size: var(--fs-h2); line-height: 1.1; letter-spacing: -0.02em; font-weight: 700; }
+.out p.say { margin-top: 12px; font-size: var(--fs-lead); color: var(--ink-2); max-width: 30em; }
+.land { margin-top: 28px; display: grid; justify-items: center; }
+.slip { position: relative; z-index: 2; width: 210px; padding: 14px 16px 22px; background: var(--paper); color: var(--paper-ink);
+  font-family: var(--mono); font-size: var(--fs-micro); line-height: 1.5; transform: rotate(var(--p-slip-r));
+  box-shadow: 0 10px 24px -14px var(--shadow), 0 1px 2px var(--shadow-soft); margin-bottom: -16px;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 92% 94%, 84% 100%, 76% 94%, 68% 100%, 60% 94%, 52% 100%, 44% 94%, 36% 100%, 28% 94%, 20% 100%, 12% 94%, 4% 100%, 0 95%); }
+.slip b { display: block; font-weight: 600; letter-spacing: 0.06em; }
+.slip i { display: block; height: 4px; margin: 7px 0; background: var(--paper-muted); opacity: 0.4; border-radius: 2px; width: 80%; }
+.slip i.s { width: 55%; }
+.slip .tot { display: flex; justify-content: space-between; font-weight: 600; margin-top: 8px; }
+.rh-app.mini { --app-scale: 1; border-radius: 22px; max-width: 340px; }
+.rh-app.mini .a-msgs { padding: 12px; }
+.src { margin-top: 10px; font-size: var(--fs-micro); color: var(--ink-3); }
+.irs { margin-top: 14px; font-size: var(--fs-body); color: var(--ink); max-width: 30em; padding-left: 12px; border-left: 3px solid var(--p-kraft); }
+
+/* Close */
+.close { padding: var(--section) 0 40px; }
+.close h2 { font-size: var(--fs-h2); line-height: 1.1; letter-spacing: -0.02em; font-weight: 700; }
+.close p.say { margin-top: 12px; color: var(--ink-2); max-width: 30em; }
+.close .penny { width: 72px; height: 72px; margin-bottom: 8px; }
+.motion { padding: 24px 0 32px; font-size: var(--fs-micro); color: var(--ink-3); }
+
+/* Live mode: JavaScript on and motion allowed. The box starts full and empties as you scroll. */
+.live .box .strip { opacity: 1; transform-box: fill-box; transform-origin: 50% 100%; transition: transform var(--p-lift), opacity var(--p-lift); }
+.live .box .strip.gone { opacity: 0; transform: translateY(-70px) rotate(14deg); }
+.live .slip { transition: transform var(--p-lift), opacity var(--p-lift); }
+.live .out:not(.on) .slip { opacity: 0; transform: translateY(-90px) rotate(10deg); }
+.live .out .rh-app.mini .a-card { transition: background-color var(--p-lift) 300ms; }
+.live .out:not(.on) .rh-app.mini .a-done { background: var(--canvas); border-color: var(--line); }
+
+@media (min-width: 520px) {
+  .btn-l { width: auto; }
+  .cta { grid-auto-flow: column; align-items: center; justify-content: start; gap: 16px; }
+}
+@media (min-width: 900px) {
+  .nav { display: flex; }
+  .head-act { margin-left: 28px; }
+  .menu { display: none; }
+  .scene { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 7fr); column-gap: 64px; }
+  .pin { grid-column: 1; grid-row: 1 / 6; position: sticky; top: 24px; align-self: start; padding-top: 28px; }
+  .hero { grid-column: 2; grid-row: 1; padding-top: 56px; }
+  .s1 { grid-column: 2; grid-row: 2; } .s2 { grid-column: 2; grid-row: 3; } .s3 { grid-column: 2; grid-row: 4; }
+  .close { grid-column: 2; grid-row: 5; padding-bottom: 120px; }
+  .band { position: static; height: auto; margin: 0; padding: 0; border: 0; justify-content: flex-start; }
+  .box { width: 276px; }
+  h1 { font-size: clamp(2.5rem, 1rem + 3.2vw, 3.75rem); }
+  .band .penny { width: 84px; height: 84px; }
+  .filed { padding-top: 12px; }
+  .filed .rh-app { --app-scale: 1; margin: 0; }
+  .out { padding-top: 112px; }
+  .land { justify-items: start; }
+}
+@media (max-width: 899px) { .pin { display: contents; } .scene { display: flex; flex-direction: column; } .band { order: -1; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="head">
+  <a class="brand" href="#" aria-label="Receipt Hunter, home"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 86.06 88.29" fill="currentColor"><path d="M48.55,0v22.07c12.19,0,22.07,9.88,22.07,22.07h0c0,12.19-9.88,22.07-22.07,22.07v22.07h37.51V.02h-37.51,0Z"/><path d="M15.45,0H0v88.27h37.51v-22.07c-12.19,0-22.07-9.88-22.07-22.07h0c12.19,0,22.07-9.88,22.07-22.07h0C37.51,9.88,27.63,0,15.44,0h.01Z"/></svg>Receipt Hunter</a>
+  <nav class="nav" aria-label="Main"><a href="#how">How it works</a><a href="#">Pricing</a><a href="#">For bookkeepers</a><a href="#">Sign in</a></nav>
+  <div class="head-act">
+    <a class="btn btn-s" href="#start">Start free</a>
+    <button class="menu" type="button" aria-label="Menu"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M224,128a8,8,0,0,1-8,8H40a8,8,0,0,1,0-16H216A8,8,0,0,1,224,128ZM40,72H216a8,8,0,0,0,0-16H40a8,8,0,0,0,0,16ZM216,184H40a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Z"/></svg></button>
+  </div>
+</header>
+
+<main class="scene">
+<section class="hero" aria-labelledby="h1">
+  <h1 id="h1"><span class="nb">Too small</span> for big <span class="nb">accounting software?</span></h1>
+  <p class="lead">Penny collects your receipts and keeps them in one place for tax time.</p>
+  <div class="cta"><a class="btn btn-l" href="#start">Start free</a><span class="free">Free while we launch. No card.</span></div>
+  <p class="proof">Built in the Sacramento area with an HVAC contractor and an underground utilities crew.</p>
+  <!-- Quote slot: a first name, trade and one sentence, after written permission (website PRD section 10) -->
+</section>
+
+<div class="pin">
+  <div class="band">
+    <svg class="box" viewBox="0 0 330 230" role="img" aria-label="A shoebox of receipts">
+      <polygon class="lid" points="62,96 302,96 322,24 82,24"/>
+      <polygon class="inside" points="40,112 62,96 302,96 280,112"/>
+      <g class="strip" data-step="3"><path d="M70,150 L74,46 l6,-5 l6,5 l6,-5 l6,5 l6,-5 l6,5 l6,-5 l6,5 L126,152 Z"/><line x1="84" y1="64" x2="114" y2="64"/><line x1="84" y1="76" x2="108" y2="76"/></g>
+      <g class="strip" data-step="1"><path d="M118,150 L114,58 l6,-5 l6,5 l6,-5 l6,5 l6,-5 l6,5 l6,-5 l6,5 L168,150 Z" transform="rotate(-6 140 100)"/><line x1="126" y1="74" x2="156" y2="74" transform="rotate(-6 140 100)"/><line x1="126" y1="86" x2="148" y2="86" transform="rotate(-6 140 100)"/></g>
+      <g class="strip" data-step="3"><path d="M166,150 L170,40 l6,-5 l6,5 l6,-5 l6,5 l6,-5 l6,5 l6,-5 l6,5 L222,150 Z" transform="rotate(5 195 100)"/><line x1="180" y1="58" x2="210" y2="58" transform="rotate(5 195 100)"/><line x1="180" y1="70" x2="202" y2="70" transform="rotate(5 195 100)"/></g>
+      <g class="strip" data-step="2"><path d="M214,150 L216,62 l6,-5 l6,5 l6,-5 l6,5 l6,-5 l6,5 l6,-5 l6,5 L266,150 Z" transform="rotate(10 240 110)"/><line x1="226" y1="78" x2="254" y2="78" transform="rotate(10 240 110)"/><line x1="226" y1="90" x2="246" y2="90" transform="rotate(10 240 110)"/></g>
+      <g class="strip" data-step="3"><path d="M96,150 L98,70 l6,-5 l6,5 l6,-5 l6,5 l6,-5 l6,5 l6,-5 l6,5 L150,150 Z" transform="rotate(-14 120 110)"/><line x1="108" y1="86" x2="136" y2="86" transform="rotate(-14 120 110)"/></g>
+      <polygon class="side" points="280,112 302,96 302,196 280,214"/>
+      <rect class="front" x="40" y="112" width="240" height="102" rx="3"/>
+      <rect class="tag" x="104" y="140" width="112" height="34" rx="3"/>
+      <text class="tag-t" x="160" y="162" text-anchor="middle">RECEIPTS</text>
+    </svg>
+    <img class="penny" src="kit/penny/receipt.png" alt="" width="64" height="64">
+  </div>
+
+  <div class="filed" id="how">
+    <figure class="rh-app" role="img" aria-label="Penny's chat in the Receipt Hunter app: three receipts filed, each matched to its card charge">
+      <div class="a-head">
+        <span class="a-round"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M224,128a8,8,0,0,1-8,8H40a8,8,0,0,1,0-16H216A8,8,0,0,1,224,128ZM40,72H216a8,8,0,0,0,0-16H40a8,8,0,0,0,0,16ZM216,184H40a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Z"/></svg></span>
+        <span class="a-who"><img src="kit/penny/front.png" alt="" width="46" height="46"><span class="a-pill">Penny</span></span>
+        <span class="a-round"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M256,136a8,8,0,0,1-8,8H232v16a8,8,0,0,1-16,0V144H200a8,8,0,0,1,0-16h16V112a8,8,0,0,1,16,0v16h16A8,8,0,0,1,256,136Zm-57.87,58.85a8,8,0,0,1-12.26,10.3C165.75,181.19,138.09,168,108,168s-57.75,13.19-77.87,37.15a8,8,0,0,1-12.25-10.3c14.94-17.78,33.52-30.41,54.17-37.17a68,68,0,1,1,71.9,0C164.6,164.44,183.18,177.07,198.13,194.85ZM108,152a52,52,0,1,0-52-52A52.06,52.06,0,0,0,108,152Z"/></svg></span>
+      </div>
+      <div class="a-msgs">
+        <p class="a-time">Today, 4:31 PM</p>
+        <div class="a-card a-done" data-step="1">
+          <span class="a-card-top"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z"/></svg><span class="a-dot"></span><span><span class="got">Receipt in: </span>$236.97 Northside Hardware</span></span>
+          <span class="a-sub"><span class="no">Card charge · no receipt yet</span><span class="got">From an email · matched to the card charge</span></span>
+        </div>
+        <div class="a-card a-done" data-step="2">
+          <span class="a-card-top"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z"/></svg><span class="a-dot"></span><span><span class="got">Receipt in: </span>$149.99 Ridge Lumber</span></span>
+          <span class="a-sub"><span class="no">Card charge · no receipt yet</span><span class="got">Matched to the card charge</span></span>
+        </div>
+        <div class="a-card a-done" data-step="3">
+          <span class="a-card-top"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z"/></svg><span class="a-dot"></span><span><span class="got">Receipt in: </span>$412.18 Oakline Supply</span></span>
+          <span class="a-sub"><span class="no">Card charge · no receipt yet</span><span class="got">Kitchen job · matched to the card charge</span></span>
+        </div>
+      </div>
+      <div class="a-composer"><span class="a-plus"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"/></svg></span><span class="a-ph">Message Penny</span><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M208,56H180.28L166.65,35.56A8,8,0,0,0,160,32H96a8,8,0,0,0-6.65,3.56L75.71,56H48A24,24,0,0,0,24,80V192a24,24,0,0,0,24,24H208a24,24,0,0,0,24-24V80A24,24,0,0,0,208,56Zm8,136a8,8,0,0,1-8,8H48a8,8,0,0,1-8-8V80a8,8,0,0,1,8-8H80a8,8,0,0,0,6.66-3.56L100.28,48h55.43l13.63,20.44A8,8,0,0,0,176,72h32a8,8,0,0,1,8,8ZM128,88a44,44,0,1,0,44,44A44.05,44.05,0,0,0,128,88Zm0,72a28,28,0,1,1,28-28A28,28,0,0,1,128,160Z"/></svg><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M128,176a48.05,48.05,0,0,0,48-48V64a48,48,0,0,0-96,0v64A48.05,48.05,0,0,0,128,176ZM96,64a32,32,0,0,1,64,0v64a32,32,0,0,1-64,0Zm40,143.6V240a8,8,0,0,1-16,0V207.6A80.11,80.11,0,0,1,48,128a8,8,0,0,1,16,0,64,64,0,0,0,128,0,8,8,0,0,1,16,0A80.11,80.11,0,0,1,136,207.6Z"/></svg></div>
+      <div class="a-tabs">
+        <div class="a-bar">
+          <span class="a-tab"><i class="red"></i><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M224,48H32A16,16,0,0,0,16,64V192a16,16,0,0,0,16,16H224a16,16,0,0,0,16-16V64A16,16,0,0,0,224,48Zm0,16V88H32V64Zm0,128H32V104H224v88Zm-16-24a8,8,0,0,1-8,8H168a8,8,0,0,1,0-16h32A8,8,0,0,1,208,168Zm-64,0a8,8,0,0,1-8,8H120a8,8,0,0,1,0-16h16A8,8,0,0,1,144,168Z"/></svg>Payments</span>
+          <span class="a-tab"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM224,48V208a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V48A16,16,0,0,1,48,32H208A16,16,0,0,1,224,48ZM208,208V48H48V208H208Z"/></svg>Asks</span>
+          <span class="a-tab"><i class="violet"></i><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M176,232a8,8,0,0,1-8,8H88a8,8,0,0,1,0-16h80A8,8,0,0,1,176,232Zm40-128a87.55,87.55,0,0,1-33.64,69.21A16.24,16.24,0,0,0,176,186v6a16,16,0,0,1-16,16H96a16,16,0,0,1-16-16v-6a16,16,0,0,0-6.23-12.66A87.59,87.59,0,0,1,40,104.49C39.74,56.83,78.26,17.14,125.88,16A88,88,0,0,1,216,104Zm-16,0a72,72,0,0,0-73.74-72c-39,.92-70.47,33.39-70.26,72.39a71.65,71.65,0,0,0,27.64,56.3A32,32,0,0,1,96,186v6h64v-6a32.15,32.15,0,0,1,12.47-25.35A71.65,71.65,0,0,0,200,104Zm-16.11-9.34a57.6,57.6,0,0,0-46.56-46.55,8,8,0,0,0-2.66,15.78c16.57,2.79,30.63,16.85,33.44,33.45A8,8,0,0,0,176,104a9,9,0,0,0,1.35-.11A8,8,0,0,0,183.89,94.66Z"/></svg>Ideas</span>
+          <span class="a-tab"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M224,200h-8V40a8,8,0,0,0-8-8H152a8,8,0,0,0-8,8V80H96a8,8,0,0,0-8,8v40H48a8,8,0,0,0-8,8v64H32a8,8,0,0,0,0,16H224a8,8,0,0,0,0-16ZM160,48h40V200H160ZM104,96h40V200H104ZM56,144H88v56H56Z"/></svg>Reports</span>
+        </div>
+        <span class="a-chat"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M128,24A104,104,0,0,0,36.18,176.88L24.83,210.93a16,16,0,0,0,20.24,20.24l34.05-11.35A104,104,0,1,0,128,24Zm0,192a87.87,87.87,0,0,1-44.06-11.81,8,8,0,0,0-6.54-.67L40,216,52.47,178.6a8,8,0,0,0-.66-6.54A88,88,0,1,1,128,216Z"/></svg></span>
+      </div>
+    </figure>
+  </div>
+</div>
+
+<section class="out s1" data-step="1" aria-labelledby="h-s1">
+  <h2 id="h-s1">Your card alerts do the setup.</h2>
+  <p class="say">Forward your cards' purchase alerts to Penny. Any card that emails an alert works.</p>
+  <div class="land">
+    <div class="slip" aria-hidden="true"><b>NORTHSIDE HARDWARE</b><i></i><i class="s"></i><i></i><span class="tot"><span>TOTAL</span><span>$236.97</span></span></div>
+  </div>
+</section>
+
+<section class="out s2" data-step="2" aria-labelledby="h-s2">
+  <h2 id="h-s2">Work in jobs? So does she.</h2>
+  <p class="say">Penny matches each receipt to its card charge and can put it on a job.</p>
+  <div class="land">
+    <div class="slip" aria-hidden="true"><b>RIDGE LUMBER</b><i></i><i></i><i class="s"></i><span class="tot"><span>TOTAL</span><span>$149.99</span></span></div>
+    <div class="rh-app mini"><div class="a-msgs"><div class="a-card">
+      <span class="a-card-top"><span class="a-dot"></span>Pick a job for $149.99 at Ridge Lumber</span>
+      <span class="a-sub">Matched to the card charge</span>
+    </div></div></div>
+  </div>
+</section>
+
+<section class="out s3" data-step="3" aria-labelledby="h-s3">
+  <h2 id="h-s3">Ready when the accountant asks.</h2>
+  <!-- IRS line, as allowed by the research (angle 1). Sources, both read Oct 27, 2026:
+       https://www.irs.gov/businesses/small-businesses-self-employed/what-kind-of-records-should-i-keep (updated Aug 3, 2026)
+       https://www.irs.gov/businesses/small-businesses-self-employed/how-long-should-i-keep-records (updated Jun 30, 2026) -->
+  <p class="irs">The IRS lists receipts among the records that back up your return, and asks you to keep most records for 3 years.</p>
+  <p class="src">Source: IRS</p>
+  <div class="land">
+    <div class="slip" aria-hidden="true"><b>OAKLINE SUPPLY</b><i></i><i class="s"></i><i></i><span class="tot"><span>TOTAL</span><span>$412.18</span></span></div>
+  </div>
+</section>
+
+<section class="close" id="start" aria-labelledby="h-close">
+  <img class="penny" src="kit/penny/happy.png" alt="" width="72" height="72">
+  <h2 id="h-close">At tax time, it is all filed.</h2>
+  <p class="say">Every document and its history, viewing, search, export and your bookkeeper's login stay free, even if you stop paying.</p>
+  <div class="cta"><a class="btn btn-l" href="#">Start free</a><span class="free">Free while we launch. No card.</span></div>
+</section>
+</main>
+<p class="motion">This page moves on scroll: the shoebox stays put and gives up one receipt per section, and each lands on its charge.</p>
+</div>
+<script>
+(function () {
+  if (!window.matchMedia || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var root = document.documentElement; root.classList.add('live');
+  var secs = [].slice.call(document.querySelectorAll('.out[data-step]'));
+  var strips = [].slice.call(document.querySelectorAll('.box .strip'));
+  var rows = [].slice.call(document.querySelectorAll('.pin .a-card[data-step]'));
+  var ticking = false;
+  function update() {
+    ticking = false;
+    var step = 0, line = innerHeight * 0.62;
+    secs.forEach(function (s) {
+      var on = scrollY > 60 && s.getBoundingClientRect().top < line;
+      s.classList.toggle('on', on);
+      if (on) step = Math.max(step, +s.dataset.step);
+    });
+    strips.forEach(function (g) { g.classList.toggle('gone', +g.dataset.step <= step); });
+    rows.forEach(function (r) { r.classList.toggle('on', +r.dataset.step <= step); });
+  }
+  addEventListener('scroll', function () { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
+  addEventListener('resize', update);
+  update();
+})();
+</script>
+</body>
+</html>

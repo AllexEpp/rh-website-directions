@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Direction 8: Chat with Penny</title>
+<link rel="stylesheet" href="kit/tokens.css">
+<link rel="stylesheet" href="kit/app.css">
+<style>
+/* Direction 8: Chat with Penny.
+   Idea: the page is one conversation with Penny; her messages carry every fact, the visitor's questions sit in
+   grey bubbles on the right, and the button is a reply chip.
+   Structure: header; Penny's hello (H1 in her bubble, avatar beside) + her first ask from the app + right-aligned reply chips (Start free);
+   then six turns, each a visitor bubble on the right and Penny's answer on the left (text, an app card,
+   the morning brief screen, the fine print); last turn ends on the Start free chip. At 900 px and up a sticky
+   contact panel (Penny, who she is) sits left of the thread, like a messaging app.
+   Proposed tokens:
+   --p-thread: 700px      width of the conversation; a chat reads best as one narrow column.
+   --p-hello: 28 -> 44 px Penny's first message is the H1, set as her chat bubble, not a display headline.
+   --p-penny: var(--brand-tint) Penny's bubble: her colour, so the first screen reads as a chat at once.
+   --p-say: 22 -> 34 px   Penny's answers are the section headings: large, plain text, as in the app.
+   --p-you: var(--recessed) the visitor's bubble, the app's own user bubble colour.
+   --p-bubble-r: 22px, --p-tail-r: 6px  the bubble corner and its tail corner (iMessage-like shape, app radius).
+   --p-turn: 56 -> 104 px space between turns; one question and its answer per phone screen.
+   --p-avatar: 30px       Penny's small face beside each of her groups; drawn Penny stays small.
+   --p-chip-h: 52px       reply chips are tap targets, taller than the 44 px minimum.
+   --p-rise: 420ms cubic-bezier(.2,.7,.2,1)  messages rise in as they scroll into view (motion allowed only).
+   Dark mode: works on the token file's dark values. */
+:root {
+  --p-thread: 700px;
+  --p-hello: clamp(1.75rem, 1.3rem + 1.9vw, 2.75rem);
+  --p-penny: var(--brand-tint);
+  --p-say: clamp(1.375rem, 1.1rem + 1.15vw, 2.125rem);
+  --p-you: var(--recessed);
+  --p-bubble-r: 22px;
+  --p-tail-r: 6px;
+  --p-turn: clamp(56px, 7vw, 104px);
+  --p-avatar: 30px;
+  --p-chip-h: 52px;
+  --p-rise: 420ms cubic-bezier(.2, .7, .2, 1);
+}
+
+/* Header */
+.site-head { position: sticky; top: 0; z-index: 5; background: var(--canvas); border-bottom: 1px solid var(--line); }
+.site-head .wrap { max-width: 1240px; margin: 0 auto; padding: 0 var(--gutter); height: 60px;
+  display: flex; align-items: center; gap: 24px; }
+.brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 700; text-decoration: none; font-size: 1.0625rem; letter-spacing: -0.01em; }
+.brand svg { width: 22px; height: 22px; }
+.nav { display: none; gap: 28px; margin-left: auto; font-size: var(--fs-small); font-weight: 500; }
+.nav a { text-decoration: none; color: var(--ink-2); }
+.nav a:hover { color: var(--ink); }
+.head-actions { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.btn-sm { display: inline-flex; align-items: center; height: 38px; padding: 0 16px; border-radius: var(--r-full);
+  background: var(--brand); color: var(--on-brand); font-weight: 600; font-size: var(--fs-small); text-decoration: none; }
+.menu { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: var(--canvas);
+  display: grid; place-items: center; color: var(--ink); padding: 0; }
+.menu svg { width: 20px; height: 20px; }
+
+/* Layout */
+.room { max-width: 1240px; margin: 0 auto; padding: 0 var(--gutter); }
+.contact { display: none; }
+.thread { max-width: var(--p-thread); margin: 0 auto; padding: 28px 0 var(--section); }
+
+/* Messages */
+.turn + .turn { margin-top: var(--p-turn); }
+.day { text-align: center; font-size: var(--fs-micro); color: var(--ink-3); margin: 0 0 22px; }
+.from { display: flex; align-items: center; gap: 8px; font-size: var(--fs-small); font-weight: 600; color: var(--ink-2); margin-bottom: 10px; }
+.from img { width: var(--p-avatar); height: var(--p-avatar); border-radius: 50%; background: var(--recessed); }
+.hello-row { display: grid; grid-template-columns: var(--p-avatar) minmax(0, 1fr); gap: 10px; align-items: end; }
+.hello-row > img { width: var(--p-avatar); height: var(--p-avatar); border-radius: 50%; background: var(--recessed); }
+.hello { font-size: var(--p-hello); line-height: 1.14; letter-spacing: -0.025em; font-weight: 700;
+  background: var(--p-penny); padding: 16px 20px 18px; max-width: 15em;
+  border-radius: var(--p-bubble-r) var(--p-bubble-r) var(--p-bubble-r) var(--p-tail-r); }
+.first .crop { margin-left: calc(var(--p-avatar) + 10px); }
+.first .chips { justify-content: flex-end; }
+.first .free { text-align: right; }
+.say { font-size: var(--p-say); line-height: 1.28; letter-spacing: -0.02em; font-weight: 600; }
+.say + .say, .penny > * + * { margin-top: 14px; }
+.note { font-size: var(--fs-body); line-height: 1.55; color: var(--ink-2); max-width: 36em; }
+.you { display: flex; justify-content: flex-end; margin-bottom: 20px; }
+.you p { max-width: 80%; background: var(--p-you); padding: 12px 18px; font-size: var(--fs-lead); line-height: 1.35;
+  border-radius: var(--p-bubble-r) var(--p-bubble-r) var(--p-tail-r) var(--p-bubble-r); }
+
+/* App pieces inside the thread (frame only; the app's own markup is untouched) */
+.crop { margin-top: 18px; max-width: 375px; border-radius: 26px; overflow: hidden;
+  border: 1px solid var(--line); box-shadow: 0 24px 48px -28px var(--shadow), 0 2px 6px var(--shadow-soft); }
+.crop .rh-app { border: 0; border-radius: 0; box-shadow: none; --app-scale: 0.94; }
+.crop.ask { max-height: 172px; }
+.inline-app .rh-app { --app-scale: 0.94; margin-top: 18px; }
+.bare .rh-app { border: 0; box-shadow: none; background: transparent; border-radius: 0; max-width: 375px; --app-scale: 1.02; }
+.bare .rh-app .a-msgs { padding: 14px 0 0; }
+
+/* Reply chips */
+.chips { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+.chip { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: var(--p-chip-h); padding: 0 22px;
+  border-radius: var(--r-full); border: 1.5px solid var(--line-strong); color: var(--ink); text-decoration: none;
+  font-weight: 600; font-size: var(--fs-body); background: var(--canvas); }
+.chip.go { background: var(--brand); border-color: var(--brand); color: var(--on-brand); }
+.chip.go:hover { background: var(--brand-strong); border-color: var(--brand-strong); }
+.chip svg { width: 18px; height: 18px; }
+.free { margin-top: 10px; font-size: var(--fs-small); color: var(--ink-2); }
+.proof { margin-top: 18px; font-size: var(--fs-small); line-height: 1.5; color: var(--ink-2); max-width: 30em; }
+.small { font-size: var(--fs-small); line-height: 1.55; color: var(--ink-2); max-width: 34em; }
+
+/* Last turn */
+.end .chip.go { height: 60px; padding: 0 34px; font-size: var(--fs-lead); }
+
+.first .chip { height: 48px; padding: 0 20px; }
+.first .chip:not(.go) { background: var(--p-you); border-color: var(--p-you); }
+.contact .chip { margin-top: 20px; }
+.contact .free { margin-top: 8px; }
+@media (min-width: 720px) {
+  .thread { padding-top: 48px; }
+  .you p { max-width: 70%; }
+}
+@media (min-width: 900px) {
+  .nav { display: flex; }
+  .head-actions { margin-left: 8px; }
+  .menu { display: none; }
+  .room { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 64px; }
+  .thread { margin: 0; padding-top: 64px; }
+  .contact { display: block; position: sticky; top: 96px; align-self: start; padding: 28px 0 40px; }
+  .contact img { width: 132px; height: 132px; }
+  .contact .name { margin-top: 8px; font-size: var(--fs-h3); font-weight: 700; }
+  .contact .what { margin-top: 6px; font-size: var(--fs-small); line-height: 1.5; color: var(--ink-2); }
+  .contact .line { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); font-size: var(--fs-small); color: var(--ink-2); line-height: 1.5; }
+}
+@media (min-width: 1200px) {
+  .room { grid-template-columns: 320px minmax(0, 760px); gap: 96px; justify-content: center; }
+}
+
+/* Motion: each message rises in as it scrolls into view; off under Reduce Motion and without support */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .turn:not(.first) .you, .turn:not(.first) .penny {
+      animation: rise linear both; animation-timeline: view(); animation-range: entry 0% entry 60%;
+    }
+  }
+}
+@keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+</style>
+</head>
+<body>
+<header class="site-head">
+  <div class="wrap">
+    <a class="brand" href="#" aria-label="Receipt Hunter home">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 86.06 88.29" fill="currentColor"><path d="M48.55,0v22.07c12.19,0,22.07,9.88,22.07,22.07h0c0,12.19-9.88,22.07-22.07,22.07v22.07h37.51V.02h-37.51,0Z"/><path d="M15.45,0H0v88.27h37.51v-22.07c-12.19,0-22.07-9.88-22.07-22.07h0c12.19,0,22.07-9.88,22.07-22.07h0C37.51,9.88,27.63,0,15.44,0h.01Z"/></svg>
+      Receipt Hunter
+    </a>
+    <nav class="nav" aria-label="Main">
+      <a href="#how">How it works</a>
+      <a href="#cost">Pricing</a>
+      <a href="#books">For bookkeepers</a>
+      <a href="#">Sign in</a>
+    </nav>
+    <div class="head-actions">
+      <a class="btn-sm" href="#">Start free</a>
+      <button class="menu" type="button" aria-label="Menu"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M224,128a8,8,0,0,1-8,8H40a8,8,0,0,1,0-16H216A8,8,0,0,1,224,128ZM40,72H216a8,8,0,0,0,0-16H40a8,8,0,0,0,0,16ZM216,184H40a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Z"/></svg></button>
+    </div>
+  </div>
+</header>
+
+<div class="room">
+  <aside class="contact" aria-label="About Penny">
+    <img src="kit/penny/wave.png" alt="" width="132" height="132">
+    <p class="name">Penny</p>
+    <p class="what">An AI assistant for your receipts and the work messages around them.</p>
+    <a class="chip go" href="#">Start free</a>
+    <p class="free">Free while we launch. No card.</p>
+  </aside>
+
+  <main class="thread">
+    <section class="turn first" aria-labelledby="hello">
+      <p class="day">Today</p>
+      <div class="penny">
+        <div class="hello-row">
+          <img src="kit/penny/avatar-idle.png" alt="" width="30" height="30">
+          <h1 class="hello" id="hello">Hi, I'm Penny. I get the receipt from whoever made the charge.</h1>
+        </div>
+        <div class="crop ask">
+<!-- RH app screen: the hero chat. Copy as is; only the frame around .rh-app may change. -->
+<figure class="rh-app" role="img" aria-label="Penny's chat in the Receipt Hunter app: she tells the owner she asked Mike for the receipt for a $412.18 charge on Mike's card, and files it when his photo comes in">
+  <div class="a-head">
+    <span class="a-round"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M224,128a8,8,0,0,1-8,8H40a8,8,0,0,1,0-16H216A8,8,0,0,1,224,128ZM40,72H216a8,8,0,0,0,0-16H40a8,8,0,0,0,0,16ZM216,184H40a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Z"/></svg></span>
+    <span class="a-who"><img src="kit/penny/front.png" alt="" width="46" height="46"><span class="a-pill">Penny</span></span>
+    <span class="a-round"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M256,136a8,8,0,0,1-8,8H232v16a8,8,0,0,1-16,0V144H200a8,8,0,0,1,0-16h16V112a8,8,0,0,1,16,0v16h16A8,8,0,0,1,256,136Zm-57.87,58.85a8,8,0,0,1-12.26,10.3C165.75,181.19,138.09,168,108,168s-57.75,13.19-77.87,37.15a8,8,0,0,1-12.25-10.3c14.94-17.78,33.52-30.41,54.17-37.17a68,68,0,1,1,71.9,0C164.6,164.44,183.18,177.07,198.13,194.85ZM108,152a52,52,0,1,0-52-52A52.06,52.06,0,0,0,108,152Z"/></svg></span>
+  </div>
+  <div class="a-msgs">
+    <p class="a-time">Today, 4:12 PM</p>
+    <p class="a-penny">Mike's card: $412.18 at Oakline Supply. I asked Mike for the receipt in the app.</p>
+    <p class="a-time">4:31 PM</p>
+    <p class="a-penny">Mike's photo is in. It is for the kitchen job, and it matches the charge.</p>
+    <div class="a-card a-done">
+      <span class="a-card-top"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z"/></svg>Receipt in: $412.18 Oakline Supply</span>
+      <span class="a-sub">Kitchen job · matched to the card charge</span>
+    </div>
+    <p class="a-me">Great, thanks.</p>
+  </div>
+  <div class="a-composer"><span class="a-plus"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"/></svg></span><span class="a-ph">Message Penny</span><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M208,56H180.28L166.65,35.56A8,8,0,0,0,160,32H96a8,8,0,0,0-6.65,3.56L75.71,56H48A24,24,0,0,0,24,80V192a24,24,0,0,0,24,24H208a24,24,0,0,0,24-24V80A24,24,0,0,0,208,56Zm8,136a8,8,0,0,1-8,8H48a8,8,0,0,1-8-8V80a8,8,0,0,1,8-8H80a8,8,0,0,0,6.66-3.56L100.28,48h55.43l13.63,20.44A8,8,0,0,0,176,72h32a8,8,0,0,1,8,8ZM128,88a44,44,0,1,0,44,44A44.05,44.05,0,0,0,128,88Zm0,72a28,28,0,1,1,28-28A28,28,0,0,1,128,160Z"/></svg><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M128,176a48.05,48.05,0,0,0,48-48V64a48,48,0,0,0-96,0v64A48.05,48.05,0,0,0,128,176ZM96,64a32,32,0,0,1,64,0v64a32,32,0,0,1-64,0Zm40,143.6V240a8,8,0,0,1-16,0V207.6A80.11,80.11,0,0,1,48,128a8,8,0,0,1,16,0,64,64,0,0,0,128,0,8,8,0,0,1,16,0A80.11,80.11,0,0,1,136,207.6Z"/></svg></div>
+  <div class="a-tabs">
+    <div class="a-bar">
+      <span class="a-tab"><i class="red"></i><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M224,48H32A16,16,0,0,0,16,64V192a16,16,0,0,0,16,16H224a16,16,0,0,0,16-16V64A16,16,0,0,0,224,48Zm0,16V88H32V64Zm0,128H32V104H224v88Zm-16-24a8,8,0,0,1-8,8H168a8,8,0,0,1,0-16h32A8,8,0,0,1,208,168Zm-64,0a8,8,0,0,1-8,8H120a8,8,0,0,1,0-16h16A8,8,0,0,1,144,168Z"/></svg>Payments</span>
+      <span class="a-tab"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM224,48V208a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V48A16,16,0,0,1,48,32H208A16,16,0,0,1,224,48ZM208,208V48H48V208H208Z"/></svg>Asks</span>
+      <span class="a-tab"><i class="violet"></i><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M176,232a8,8,0,0,1-8,8H88a8,8,0,0,1,0-16h80A8,8,0,0,1,176,232Zm40-128a87.55,87.55,0,0,1-33.64,69.21A16.24,16.24,0,0,0,176,186v6a16,16,0,0,1-16,16H96a16,16,0,0,1-16-16v-6a16,16,0,0,0-6.23-12.66A87.59,87.59,0,0,1,40,104.49C39.74,56.83,78.26,17.14,125.88,16A88,88,0,0,1,216,104Zm-16,0a72,72,0,0,0-73.74-72c-39,.92-70.47,33.39-70.26,72.39a71.65,71.65,0,0,0,27.64,56.3A32,32,0,0,1,96,186v6h64v-6a32.15,32.15,0,0,1,12.47-25.35A71.65,71.65,0,0,0,200,104Zm-16.11-9.34a57.6,57.6,0,0,0-46.56-46.55,8,8,0,0,0-2.66,15.78c16.57,2.79,30.63,16.85,33.44,33.45A8,8,0,0,0,176,104a9,9,0,0,0,1.35-.11A8,8,0,0,0,183.89,94.66Z"/></svg>Ideas</span>
+      <span class="a-tab"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M224,200h-8V40a8,8,0,0,0-8-8H152a8,8,0,0,0-8,8V80H96a8,8,0,0,0-8,8v40H48a8,8,0,0,0-8,8v64H32a8,8,0,0,0,0,16H224a8,8,0,0,0,0-16ZM160,48h40V200H160ZM104,96h40V200H104ZM56,144H88v56H56Z"/></svg>Reports</span>
+    </div>
+    <span class="a-chat"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M128,24A104,104,0,0,0,36.18,176.88L24.83,210.93a16,16,0,0,0,20.24,20.24l34.05-11.35A104,104,0,1,0,128,24Zm0,192a87.87,87.87,0,0,1-44.06-11.81,8,8,0,0,0-6.54-.67L40,216,52.47,178.6a8,8,0,0,0-.66-6.54A88,88,0,1,1,128,216Z"/></svg></span>
+  </div>
+</figure>
+        </div>
+        <div class="chips">
+          <a class="chip go" href="#">Start free</a>
+          <a class="chip" href="#how">Show me how</a>
+        </div>
+        <p class="free">Free while we launch. No card.</p>
+        <!-- Quote slot: a first name, trade and one sentence, after written permission (website PRD section 10) -->
+      </div>
+    </section>
+
+    <section class="turn" id="how" aria-label="How receipts reach Penny">
+      <div class="you"><p>Show me how. How do receipts get to you?</p></div>
+      <div class="penny">
+        <h2 class="say">Forward your cards' purchase alerts and add your people. Any card that emails an alert works.</h2>
+        <p class="say">Then snap a photo, forward an email or text it to me. I file each one with its charge.</p>
+        <div class="bare">
+          <div class="rh-app" role="img" aria-label="A card in Penny's chat: receipt in, $412.18 at Oakline Supply, for the kitchen job, matched to the card charge">
+            <div class="a-msgs">
+              <p class="a-penny">Mike's photo is in. It is for the kitchen job, and it matches the charge.</p>
+<div class="a-card a-done">
+      <span class="a-card-top"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z"/></svg>Receipt in: $412.18 Oakline Supply</span>
+      <span class="a-sub">Kitchen job · matched to the card charge</span>
+    </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="turn" aria-label="An example crew">
+      <div class="you"><p>I run a crew. Who chases the missing ones?</p></div>
+      <div class="penny">
+        <h2 class="say">I do. Say you run a 6-person crew, and three people buy supplies on the company card.</h2>
+        <p class="say">At month end 14 receipts are missing. I ask each person for their own, in their app or by email, and by text once they say yes.</p>
+      </div>
+    </section>
+
+    <section class="turn" aria-label="The morning brief">
+      <div class="you"><p>So what is left for me?</p></div>
+      <div class="penny">
+        <h2 class="say">One brief each morning: what needs you, and who I am waiting on.</h2>
+        <div class="inline-app">
+<!-- RH app screen: the morning brief card. Copy as is; only the frame around .rh-app may change. -->
+<figure class="rh-app" role="img" aria-label="Penny's morning brief in the app: 2 things need Sam, and she is waiting on 5">
+  <div class="a-head">
+    <span class="a-round"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M224,128a8,8,0,0,1-8,8H40a8,8,0,0,1,0-16H216A8,8,0,0,1,224,128ZM40,72H216a8,8,0,0,0,0-16H40a8,8,0,0,0,0,16ZM216,184H40a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Z"/></svg></span>
+    <span class="a-who"><img src="kit/penny/front.png" alt="" width="46" height="46"><span class="a-pill">Penny</span></span>
+    <span class="a-round"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M256,136a8,8,0,0,1-8,8H232v16a8,8,0,0,1-16,0V144H200a8,8,0,0,1,0-16h16V112a8,8,0,0,1,16,0v16h16A8,8,0,0,1,256,136Zm-57.87,58.85a8,8,0,0,1-12.26,10.3C165.75,181.19,138.09,168,108,168s-57.75,13.19-77.87,37.15a8,8,0,0,1-12.25-10.3c14.94-17.78,33.52-30.41,54.17-37.17a68,68,0,1,1,71.9,0C164.6,164.44,183.18,177.07,198.13,194.85ZM108,152a52,52,0,1,0-52-52A52.06,52.06,0,0,0,108,152Z"/></svg></span>
+  </div>
+  <div class="a-msgs">
+    <p class="a-time">Today, 8:00 AM</p>
+    <div class="a-card">
+      <span class="a-label"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M197.58,129.06,146,110l-19-51.62a15.92,15.92,0,0,0-29.88,0L78,110l-51.62,19a15.92,15.92,0,0,0,0,29.88L78,178l19,51.62a15.92,15.92,0,0,0,29.88,0L146,178l51.62-19a15.92,15.92,0,0,0,0-29.88ZM137,164.22a8,8,0,0,0-4.74,4.74L112,223.85,91.78,169A8,8,0,0,0,87,164.22L32.15,144,87,123.78A8,8,0,0,0,91.78,119L112,64.15,132.22,119a8,8,0,0,0,4.74,4.74L191.85,144ZM144,40a8,8,0,0,1,8-8h16V16a8,8,0,0,1,16,0V32h16a8,8,0,0,1,0,16H184V64a8,8,0,0,1-16,0V48H152A8,8,0,0,1,144,40ZM248,88a8,8,0,0,1-8,8h-8v8a8,8,0,0,1-16,0V96h-8a8,8,0,0,1,0-16h8V72a8,8,0,0,1,16,0v8h8A8,8,0,0,1,248,88Z"/></svg>Morning brief · Tue, Oct 27</span>
+      <p class="a-brief-title">Good morning, Sam. 2 things need you, and I'm waiting on 5.</p>
+      <span class="a-row"><span class="a-dot"></span><span>Who bought $236.97 at Northside Hardware?</span><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/></svg></span>
+      <span class="a-row"><span class="a-dot"></span><span>Pick a job for $149.99 at Ridge Lumber</span><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/></svg></span>
+      <span class="a-row"><span class="a-dot wait"></span><span>Waiting on Mike: $412.18, asked yesterday</span><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/></svg></span>
+      <span class="a-row"><span class="a-dot ok"></span><span>October: 46 of 51 receipts in</span><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/></svg></span>
+      <span class="a-link">See them in Payments<svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/></svg></span>
+    </div>
+    <p class="a-penny">Tap a line to answer, or just tell me in your own words.</p>
+  </div>
+  <div class="a-composer"><span class="a-plus"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"/></svg></span><span class="a-ph">Message Penny</span><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M208,56H180.28L166.65,35.56A8,8,0,0,0,160,32H96a8,8,0,0,0-6.65,3.56L75.71,56H48A24,24,0,0,0,24,80V192a24,24,0,0,0,24,24H208a24,24,0,0,0,24-24V80A24,24,0,0,0,208,56Zm8,136a8,8,0,0,1-8,8H48a8,8,0,0,1-8-8V80a8,8,0,0,1,8-8H80a8,8,0,0,0,6.66-3.56L100.28,48h55.43l13.63,20.44A8,8,0,0,0,176,72h32a8,8,0,0,1,8,8ZM128,88a44,44,0,1,0,44,44A44.05,44.05,0,0,0,128,88Zm0,72a28,28,0,1,1,28-28A28,28,0,0,1,128,160Z"/></svg><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M128,176a48.05,48.05,0,0,0,48-48V64a48,48,0,0,0-96,0v64A48.05,48.05,0,0,0,128,176ZM96,64a32,32,0,0,1,64,0v64a32,32,0,0,1-64,0Zm40,143.6V240a8,8,0,0,1-16,0V207.6A80.11,80.11,0,0,1,48,128a8,8,0,0,1,16,0,64,64,0,0,0,128,0,8,8,0,0,1,16,0A80.11,80.11,0,0,1,136,207.6Z"/></svg></div>
+  <div class="a-tabs">
+    <div class="a-bar">
+      <span class="a-tab"><i class="red"></i><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M224,48H32A16,16,0,0,0,16,64V192a16,16,0,0,0,16,16H224a16,16,0,0,0,16-16V64A16,16,0,0,0,224,48Zm0,16V88H32V64Zm0,128H32V104H224v88Zm-16-24a8,8,0,0,1-8,8H168a8,8,0,0,1,0-16h32A8,8,0,0,1,208,168Zm-64,0a8,8,0,0,1-8,8H120a8,8,0,0,1,0-16h16A8,8,0,0,1,144,168Z"/></svg>Payments</span>
+      <span class="a-tab"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM224,48V208a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V48A16,16,0,0,1,48,32H208A16,16,0,0,1,224,48ZM208,208V48H48V208H208Z"/></svg>Asks</span>
+      <span class="a-tab"><i class="violet"></i><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M176,232a8,8,0,0,1-8,8H88a8,8,0,0,1,0-16h80A8,8,0,0,1,176,232Zm40-128a87.55,87.55,0,0,1-33.64,69.21A16.24,16.24,0,0,0,176,186v6a16,16,0,0,1-16,16H96a16,16,0,0,1-16-16v-6a16,16,0,0,0-6.23-12.66A87.59,87.59,0,0,1,40,104.49C39.74,56.83,78.26,17.14,125.88,16A88,88,0,0,1,216,104Zm-16,0a72,72,0,0,0-73.74-72c-39,.92-70.47,33.39-70.26,72.39a71.65,71.65,0,0,0,27.64,56.3A32,32,0,0,1,96,186v6h64v-6a32.15,32.15,0,0,1,12.47-25.35A71.65,71.65,0,0,0,200,104Zm-16.11-9.34a57.6,57.6,0,0,0-46.56-46.55,8,8,0,0,0-2.66,15.78c16.57,2.79,30.63,16.85,33.44,33.45A8,8,0,0,0,176,104a9,9,0,0,0,1.35-.11A8,8,0,0,0,183.89,94.66Z"/></svg>Ideas</span>
+      <span class="a-tab"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M224,200h-8V40a8,8,0,0,0-8-8H152a8,8,0,0,0-8,8V80H96a8,8,0,0,0-8,8v40H48a8,8,0,0,0-8,8v64H32a8,8,0,0,0,0,16H224a8,8,0,0,0,0-16ZM160,48h40V200H160ZM104,96h40V200H104ZM56,144H88v56H56Z"/></svg>Reports</span>
+    </div>
+    <span class="a-chat"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M128,24A104,104,0,0,0,36.18,176.88L24.83,210.93a16,16,0,0,0,20.24,20.24l34.05-11.35A104,104,0,1,0,128,24Zm0,192a87.87,87.87,0,0,1-44.06-11.81,8,8,0,0,0-6.54-.67L40,216,52.47,178.6a8,8,0,0,0-.66-6.54A88,88,0,1,1,128,216Z"/></svg></span>
+  </div>
+</figure>
+        </div>
+      </div>
+    </section>
+
+    <section class="turn" aria-label="Money and your data">
+      <div class="you"><p>Can you touch my money?</p></div>
+      <div class="penny">
+        <h2 class="say">No. I never pay, move money or sign, and I never ask for a bank login.</h2>
+        <p class="small">Penny reads your receipts and messages with AI from Anthropic (Claude) and Google (Gemini), after you agree in the app. Neither one trains its AI on what you send.</p>
+      </div>
+    </section>
+
+    <section class="turn" id="books" aria-label="For bookkeepers">
+      <div class="you"><p>I'm a bookkeeper.</p></div>
+      <div class="penny">
+        <h2 class="say">Each company gets one free bookkeeper login. I ask each client's people for their own charges.</h2>
+      </div>
+    </section>
+
+    <section class="turn end" id="cost" aria-label="What it costs">
+      <div class="you"><p>What does it cost?</p></div>
+      <div class="penny">
+        <h2 class="say">Free while we launch, with Team's features and no cap on people or companies.</h2>
+        <p class="small">When plans start, you get 30 days' notice in the app, and you choose then.</p>
+        <div class="chips">
+          <a class="chip go" href="#">Start free</a>
+        </div>
+        <p class="free">Free while we launch. No card.</p>
+        <p class="proof">Built in the Sacramento area with an HVAC contractor and an underground utilities crew.</p>
+      </div>
+    </section>
+  </main>
+</div>
+</body>
+</html>

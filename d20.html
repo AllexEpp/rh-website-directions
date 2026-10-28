@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Direction 20: Printed promise</title>
+<link rel="stylesheet" href="kit/tokens.css">
+<link rel="stylesheet" href="kit/app.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&display=swap">
+<style>
+/* Direction 20, Printed promise.
+   Message: Penny never asks for your bank login (and never pays, moves money or signs).
+   Customer: the careful owner who almost signs up and stops at "why do they need my card?" or
+     "do I hand them my bank?" (research angle 6; discovery 06, section 2.5).
+   Idea: the whole page is one narrow paper till strip, the spine of the page; its line items are the trust
+     facts, each with a dotted leader and a printed answer ("never"), and Penny's round stamp sits by the
+     Start free button where the strip ends. Different from direction 6 in grayscale: one narrow centred
+     column on a darker ground from the header to the button (no side app column, no torn zigzag edge,
+     straight cut ends, a printer slot above it), with the real consent screen printed inside the strip.
+   Structure: header; printer slot; one strip: receipt head (logo, "Served by Penny"), headline, lead,
+     line items (F7), Start free with the free line (F11), the alerts note (F3), cut line, "What she reads"
+     (the real consent screen, which shows F9 in the app's words; inside the strip on a phone, pinned beside
+     it from 900 px), cut line, "If you stop paying" (F10 exact), cut line, "Price" ("Due today" total),
+     Start free with Penny's stamp, free line (F11), proof line (F14);
+     straight cut; the motion line under the strip.
+   Motion: moves on scroll. Each printed line reveals from the top down (stepped, like a thermal head) as it
+     enters the screen, and a thin print head bar sits at the bottom edge of the screen while the strip prints.
+     Reduce Motion or no JavaScript: the strip is fully printed and the print head is hidden.
+   Dark mode: works; uses the token file's dark --paper / --paper-ink / --paper-muted.
+
+   Proposed tokens (not in tokens.css):
+   --p-mono: 'DM Mono' 400/500, for the printed line items, section labels and the stamp only (Google Fonts
+     for this mock-up; self-host before it ships). Softer and rounder than direction 6's IBM Plex Mono, and
+     the headline stays Inter 800, so the page does not read as typewriter text.
+   --p-ground: the ground around the strip. Light var(--recessed-strong) (#ebebeb), so the narrow paper
+     strip reads as a separate object at a glance, even in grayscale. Dark var(--canvas).
+   --p-strip: min(100% - 64px, 360px) on a phone, 440px from 720 px. Narrow on purpose: a till roll.
+   --p-slot: var(--ink) in light, var(--recessed-strong) in dark; the printer slot above the strip.
+   --p-leader: 2px dotted var(--line-strong), the dotted leader between a line item and its answer.
+   --p-print: 420ms steps(6, end), the line reveal; 6 steps look like a print head, not a fade.
+   --p-stamp: 112px, the stamp's size; --p-stamp-tilt: -9deg.
+   No new colours: violet --brand for the button and the stamp ring, ink on paper for everything else. */
+
+:root {
+  --p-mono: 'DM Mono', var(--mono);
+  --p-ground: var(--recessed-strong);
+  --p-strip: min(100% - 64px, 360px);
+  --p-slot: var(--ink);
+  --p-leader: 2px dotted var(--line-strong);
+  --p-print: 420ms steps(6, end);
+  --p-stamp: 112px;
+  --p-stamp-tilt: -9deg;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --p-ground: var(--canvas); --p-slot: var(--recessed-strong); }
+}
+:root[data-theme="dark"] { --p-ground: var(--canvas); --p-slot: var(--recessed-strong); }
+@media (min-width: 720px) { :root { --p-strip: 440px; } }
+
+body { background: var(--p-ground); }
+
+/* Header */
+.hd { display: flex; align-items: center; justify-content: space-between; height: var(--header-h);
+  padding: 0 var(--gutter); max-width: var(--page); margin: 0 auto; }
+.logo { display: flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 700; font-size: 17px; letter-spacing: -0.01em; }
+.logo svg { width: 24px; height: 24px; color: var(--brand); }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: var(--brand); color: var(--on-brand);
+  font-weight: 600; text-decoration: none; border-radius: var(--r-full); }
+.btn-sm { padding: 9px 18px; font-size: var(--fs-small); }
+
+/* Printer slot */
+.slot { width: calc(var(--p-strip) + 28px); max-width: calc(100% - 20px); height: 16px; margin: 12px auto 0;
+  background: var(--p-slot); border-radius: var(--r-full); position: relative; z-index: 2; }
+
+/* The strip */
+.strip { position: relative; width: var(--p-strip); margin: -8px auto 0; background: var(--paper); color: var(--paper-ink);
+  padding: 36px 20px 32px; box-shadow: 0 1px 2px var(--shadow-soft), 0 24px 40px -28px var(--shadow); }
+@media (min-width: 720px) { .strip { padding: 52px 36px 40px; } }
+
+.mono { font-family: var(--p-mono); }
+.head { text-align: center; display: grid; justify-items: center; gap: 6px; }
+.head .name { font-family: var(--p-mono); font-weight: 500; font-size: var(--fs-small); letter-spacing: 0.14em; text-transform: uppercase; }
+.served { display: inline-flex; align-items: center; gap: 8px; font-family: var(--p-mono); font-size: var(--fs-micro); color: var(--paper-ink); }
+.served img { width: 34px; height: 34px; }
+
+h1 { font-size: clamp(2.1rem, 1.6rem + 2.2vw, 2.9rem); line-height: 1.04; letter-spacing: -0.035em; font-weight: 800;
+  margin: 28px 0 14px; color: var(--ink); }
+.lead { font-size: var(--fs-lead); line-height: 1.45; color: var(--paper-ink); }
+
+.items { list-style: none; margin: 26px 0 0; padding: 0; display: grid; gap: 12px; font-family: var(--p-mono); font-size: var(--fs-body); }
+.items li { display: flex; align-items: baseline; gap: 8px; }
+.items li::after { content: none; }
+.items .lbl { flex: none; }
+.items .dots { flex: 1; border-bottom: var(--p-leader); transform: translateY(-4px); min-width: 16px; }
+.items .val { flex: none; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; }
+.note { margin-top: 18px; font-size: var(--fs-small); color: var(--paper-ink); line-height: 1.5; }
+
+.cut { border: 0; border-top: 2px dashed var(--line-strong); margin: 32px -20px; }
+@media (min-width: 720px) { .cut { margin: 40px -36px; } }
+
+.sec { position: relative; }
+.lab { font-family: var(--p-mono); font-weight: 500; font-size: var(--fs-micro); letter-spacing: 0.14em; text-transform: uppercase; color: var(--paper-ink); margin-bottom: 12px; }
+.sec h2 { font-size: clamp(1.5rem, 1.3rem + 0.9vw, 1.9rem); line-height: 1.12; letter-spacing: -0.02em; font-weight: 750; color: var(--ink); margin-bottom: 12px; }
+.sec p.body { font-size: var(--fs-body); line-height: 1.55; color: var(--paper-ink); }
+.src { margin-top: 10px; font-size: var(--fs-micro); color: var(--ink-3); }
+
+/* The real app screen: printed inside the strip on a phone, pinned beside it from 900 px */
+.screen { margin: 22px 0 0; }
+.screen picture, .screen img { display: block; width: 100%; height: auto; border-radius: 22px; }
+.screen img { border: 1px solid var(--line); box-shadow: 0 18px 36px -24px var(--shadow); }
+.screen .cap { margin-top: 10px; font-family: var(--p-mono); font-size: var(--fs-micro); color: var(--paper-ink); text-align: center; }
+/* From 900 px the strip and the screen sit side by side as one centred group (440 + 92 + 340 = 872 px);
+   the screen is pinned beside the strip while it scrolls, so the right side is never empty. */
+@media (min-width: 900px) {
+  .sec { position: static; }
+  .strip, .motion { margin-left: calc(50% - 436px); }
+  .slot { margin-left: calc(50% - 450px); }
+  .screen { position: absolute; top: 36px; bottom: 0; left: calc(100% + 92px); width: 340px; margin: 0; }
+  .screen .pin { position: sticky; top: 24px; }
+  .screen .cap { text-align: left; color: var(--ink-2); }
+  .print .head-bar { left: calc(50% - 450px); transform: none; }
+}
+
+.total { display: flex; align-items: baseline; gap: 8px; margin-top: 22px; font-family: var(--p-mono); font-weight: 500;
+  font-size: var(--fs-lead); text-transform: uppercase; letter-spacing: 0.05em; border-top: 2px solid var(--paper-ink); padding-top: 14px; }
+.total .dots { flex: 1; border-bottom: var(--p-leader); transform: translateY(-5px); }
+
+/* End: button and Penny's stamp */
+.end { margin-top: 30px; display: grid; grid-template-columns: 1fr auto; align-items: center; column-gap: 8px; }
+.end .free { grid-column: 1; grid-row: 2; }
+.end .stamp { grid-column: 2; grid-row: 1 / span 2; }
+.btn-lg { padding: 15px 24px; font-size: 17px; justify-self: start; }
+@media (min-width: 720px) { .btn-lg { padding: 16px 32px; font-size: 18px; } }
+.go { margin-top: 28px; display: grid; justify-items: start; }
+.free { margin-top: 12px; font-size: var(--fs-small); color: var(--paper-ink); }
+.stamp { margin-right: -8px; width: var(--p-stamp); height: var(--p-stamp); border-radius: 50%;
+  border: 3px solid var(--brand); outline: 1.5px solid var(--brand); outline-offset: -9px; color: var(--brand-strong);
+  display: grid; place-items: center; align-content: center; gap: 0; transform: rotate(var(--p-stamp-tilt));
+  font-family: var(--p-mono); font-weight: 500; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; text-align: center; line-height: 1.2; }
+.stamp img { width: 46px; height: 46px; margin: 1px 0; }
+.proof { margin-top: 24px; font-size: var(--fs-small); color: var(--paper-ink); line-height: 1.5; }
+.motion { width: var(--p-strip); margin: 22px auto 40px; font-size: var(--fs-micro); color: var(--ink-2); text-align: center; }
+
+/* Printing on scroll: only with JavaScript and without Reduce Motion (the script adds .print to <html>) */
+.print .ln { clip-path: inset(0 0 100% 0); transition: clip-path var(--p-print); }
+.print .ln.on { clip-path: inset(0 0 -40% 0); }
+.print .stamp.ln { clip-path: none; opacity: 0; transform: rotate(var(--p-stamp-tilt)) scale(1.35); transition: opacity 160ms ease-out, transform 220ms cubic-bezier(.3,1.6,.5,1); }
+.print .stamp.ln.on { opacity: 1; transform: rotate(var(--p-stamp-tilt)) scale(1); }
+.head-bar { display: none; }
+.print .head-bar { display: block; position: fixed; left: 50%; bottom: 0; transform: translateX(-50%); width: calc(var(--p-strip) + 28px);
+  max-width: calc(100% - 20px); height: 10px; background: var(--p-slot); border-radius: 6px 6px 0 0; transition: opacity 300ms; z-index: 5; }
+.print .head-bar.gone { opacity: 0; }
+</style>
+</head>
+<body>
+
+<header class="hd">
+  <a class="logo" href="#" aria-label="Receipt Hunter home">
+    <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 86.06 88.29" fill="currentColor"><path d="M48.55,0v22.07c12.19,0,22.07,9.88,22.07,22.07h0c0,12.19-9.88,22.07-22.07,22.07v22.07h37.51V.02h-37.51,0Z"/><path d="M15.45,0H0v88.27h37.51v-22.07c-12.19,0-22.07-9.88-22.07-22.07h0c12.19,0,22.07-9.88,22.07-22.07h0C37.51,9.88,27.63,0,15.44,0h.01Z"/></svg>
+    Receipt Hunter
+  </a>
+  <a class="btn btn-sm" href="#start">Start free</a>
+</header>
+
+<div class="slot" aria-hidden="true"></div>
+
+<main class="strip">
+  <div class="head ln">
+    <span class="name">Receipt Hunter</span>
+    <span class="served"><img src="kit/penny/avatar-idle.png" alt="" width="34" height="34">Served by Penny</span>
+  </div>
+
+  <h1 class="ln">Penny never asks for your bank login.</h1>
+  <p class="lead ln">She never pays, moves money or signs.</p>
+  <!-- F7 (FACTS.md) -->
+
+  <ul class="items" aria-label="What Penny never does">
+    <li class="ln"><span class="lbl">Bank login</span><span class="dots"></span><span class="val">never</span></li>
+    <li class="ln"><span class="lbl">Pays</span><span class="dots"></span><span class="val">never</span></li>
+    <li class="ln"><span class="lbl">Moves money</span><span class="dots"></span><span class="val">never</span></li>
+    <li class="ln"><span class="lbl">Signs</span><span class="dots"></span><span class="val">never</span></li>
+  </ul>
+  <div class="go">
+    <a class="btn btn-lg ln" href="#">Start free</a>
+    <p class="free ln">Free while we launch. No card.</p>
+    <!-- F11 exact (FACTS.md) -->
+  </div>
+  <p class="note ln">She sees each charge in the purchase alerts you forward. Any card that emails an alert works.</p>
+  <!-- F3 (FACTS.md) -->
+
+  <hr class="cut">
+
+  <section class="sec" aria-labelledby="reads">
+    <p class="lab ln">What she reads</p>
+    <h2 id="reads" class="ln">Nothing, until you agree.</h2>
+    <!-- F9 is shown by the real consent screen below, in the app's own words (critic round 1: not printed twice) -->
+    <figure class="screen ln">
+      <div class="pin">
+      <picture>
+        <source srcset="assets/d20/consent-dark.png" media="(prefers-color-scheme: dark)">
+        <img src="assets/d20/consent-light.png" alt="The Receipt Hunter app asks: Before I read anything, I need your OK. Buttons: Agree and Not now." width="786" height="880" loading="lazy">
+      </picture>
+      <p class="cap">Her first question in the app</p>
+      </div>
+    </figure>
+  </section>
+
+  <hr class="cut">
+
+  <section class="sec" aria-labelledby="stop">
+    <p class="lab ln">If you stop paying</p>
+    <h2 id="stop" class="ln">Your records stay yours.</h2>
+    <p class="body ln">Every document and its history, viewing, search, export and your bookkeeper's login stay free, even if you stop paying.</p>
+    <!-- F10 exact (FACTS.md) -->
+  </section>
+
+  <hr class="cut">
+
+  <section class="sec" aria-labelledby="price">
+    <p class="lab ln">Price</p>
+    <p class="total ln" id="price"><span>Due today</span><span class="dots"></span><span>Nothing</span></p>
+
+    <div class="end" id="start">
+      <a class="btn btn-lg ln" href="#">Start free</a>
+      <p class="free ln">Free while we launch. No card.</p>
+      <!-- F11 exact (FACTS.md) -->
+      <div class="stamp ln" aria-hidden="true">Checked<img src="kit/penny/happy.png" alt="" width="46" height="46">by Penny</div>
+    </div>
+    <p class="proof ln">Built in the Sacramento area with an HVAC contractor and an underground utilities crew.</p>
+    <!-- F14 exact (FACTS.md) -->
+    <!-- Quote slot: a first name, trade and one sentence, after written permission (website PRD section 10) -->
+  </section>
+</main>
+
+<p class="motion">This page moves on scroll: the receipt prints line by line as you scroll down.</p>
+<div class="head-bar" aria-hidden="true"></div>
+
+<script>
+(() => {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  document.documentElement.classList.add('print');
+  const lines = [...document.querySelectorAll('.ln')];
+  const bar = document.querySelector('.head-bar');
+  const queue = []; let busy = false;
+  const next = () => {
+    const el = queue.shift();
+    if (!el) { busy = false; return; }
+    busy = true; el.classList.add('on'); setTimeout(next, 110);
+  };
+  const check = () => {
+    const edge = innerHeight * 0.94;
+    for (const el of lines) {
+      if (el.dataset.q || el.getBoundingClientRect().top > edge) continue;
+      el.dataset.q = 1; queue.push(el);
+    }
+    if (!busy) next();
+    bar.classList.toggle('gone', lines[lines.length - 1].getBoundingClientRect().bottom < innerHeight);
+  };
+  addEventListener('scroll', check, { passive: true });
+  addEventListener('resize', check);
+  check();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Direction 13: A workday</title>
+<link rel="stylesheet" href="kit/tokens.css">
+<link rel="stylesheet" href="kit/app.css">
+<style>
+/* Direction 13, A workday.
+   Idea: the page is one Monday on the job, read top to bottom on a clock: each stop is a time of day where Penny
+   does one thing, and the page itself goes from morning light to a dark overnight band to the next morning's brief.
+   Structure: header; the day starts at once: a compact headline, Start free with its free line, the 6 AM to 6 PM day ruler; a vertical rail
+   of five clock stops (7:02 AM alert and Penny's ask, 10:40 AM photo from the truck, 4:12 PM chat, 6:00 PM dark
+   overnight band, 8:00 AM next-day brief); a closing stop "Today" with the sentence, the button, the safety line and the proof line. No step list, no second hero.
+   Proposed tokens (--p-*):
+   --p-clock: clamp(44px, 30px + 3.6vw, 88px), the stop's time in Inter 300 with tabular figures; the clock is the
+     page's main picture, so it is the largest type after the headline.
+   --p-clock-weight: 300, light so big numbers read as a clock face, not a headline.
+   --p-rail: 2px, the day line; --p-rail-x: 7px, its offset inside the gutter on the phone.
+   --p-dot: 14px, the stop marker on the rail (a tap-size cue, not decoration).
+   --p-time-col: 300px, the clock column at 1440, where each clock stays pinned (sticky) while its stop scrolls by.
+   --p-band-dawn: var(--paper), --p-band-day: var(--canvas), --p-band-dusk: var(--brand-tint): the background
+     steps with the hour, flat bands, no gradients.
+   --p-night: #17132a light / #0e0c18 dark, the overnight band; the one dark area of the page, a violet-black from
+     the brand so it relates to the app. --p-night-ink: #f1ecfe (13.9:1 on light night), --p-night-ink-2: #c9bdf0 (9.3:1).
+   --p-night-dot: #a78bfa, the app's dark brand violet for the rail dot at night.
+   --p-receipt-tilt: -2.5deg, the paper receipt from the truck sits a little crooked, as a real photo does.
+   --p-ease: cubic-bezier(.2,.7,.2,1); motion: the rail fills with scroll where supported; off under Reduce Motion.
+   Dark mode: works on the token file's dark values. */
+:root {
+  --p-clock: clamp(44px, 30px + 3.6vw, 88px);
+  --p-clock-weight: 300;
+  --p-rail: 2px;
+  --p-rail-x: 7px;
+  --p-dot: 14px;
+  --p-time-col: 300px;
+  --p-band-dawn: var(--paper);
+  --p-band-day: var(--canvas);
+  --p-band-dusk: var(--brand-tint);
+  --p-night: #17132a;
+  --p-night-ink: #f1ecfe;
+  --p-night-ink-2: #c9bdf0;
+  --p-night-dot: #a78bfa;
+  --p-receipt-tilt: -2.5deg;
+  --p-ease: cubic-bezier(.2,.7,.2,1);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --p-night: #0e0c18; }
+}
+:root[data-theme="dark"] { --p-night: #0e0c18; }
+
+.wrap { width: 100%; max-width: calc(var(--page) + 2 * var(--gutter)); margin: 0 auto; padding: 0 var(--gutter); }
+.nw { white-space: nowrap; }
+
+/* Header */
+.site-head { height: var(--header-h); background: var(--p-band-dawn); }
+.site-head .wrap { height: 100%; display: flex; align-items: center; gap: 16px; }
+.brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); font-weight: 700; font-size: 1.0625rem; letter-spacing: -0.01em; white-space: nowrap; }
+.brand svg { width: 24px; height: 24px; }
+.nav { display: none; margin-left: auto; gap: 32px; align-items: center; }
+.nav a { text-decoration: none; color: var(--ink-2); font-size: var(--fs-small); font-weight: 500; }
+.nav a:hover { color: var(--ink); }
+.head-actions { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; font-weight: 600;
+  background: var(--brand); color: var(--on-brand); border-radius: var(--r-full); white-space: nowrap; }
+.btn:hover { background: var(--brand-strong); }
+.btn-sm { height: 36px; padding: 0 16px; font-size: var(--fs-small); }
+.btn-lg { height: 52px; padding: 0 28px; font-size: 1.0625rem; }
+.menu { width: 40px; height: 40px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 50%;
+  background: var(--canvas); color: var(--ink); padding: 0; cursor: pointer; }
+.menu svg { width: 20px; height: 20px; }
+
+/* Hero */
+.hero { background: var(--p-band-dawn); padding: 12px 0 16px; }
+.hero h1 { font-size: clamp(1.75rem, 1.2rem + 2.6vw, 3.5rem); line-height: 1.04; letter-spacing: -0.035em; font-weight: 700; max-width: 16ch; }
+.hero h1 > span { display: block; }
+.act { margin-top: 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+.free { font-size: var(--fs-small); color: var(--ink-2); line-height: 1.35; max-width: 12ch; }
+
+/* The day ruler: 6 AM to 6 PM, one dot per stop */
+.day { margin-top: 22px; }
+.day-cap { font-size: var(--fs-small); font-weight: 600; color: var(--ink); }
+.ruler { position: relative; height: 40px; margin-top: 10px; }
+.ruler::before { content: ""; position: absolute; left: 0; right: 0; top: 12px; height: var(--p-rail); background: var(--ink); }
+.ticks { position: absolute; inset: 0; display: flex; justify-content: space-between; }
+.ticks span { position: relative; width: 1px; }
+.ticks span::before { content: ""; position: absolute; top: 6px; left: 0; width: 1px; height: 14px; background: var(--line-strong); }
+.ticks b { position: absolute; top: 24px; transform: translateX(-50%); font-size: 11px; font-weight: 600; color: var(--ink-2); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.ticks span:first-child b { transform: none; }
+.ticks span:last-child b { transform: translateX(-100%); }
+.ruler a { position: absolute; top: 6px; width: var(--p-dot); height: var(--p-dot); margin-left: calc(var(--p-dot) / -2);
+  border-radius: 50%; background: var(--brand); border: 3px solid var(--p-band-dawn); box-sizing: content-box; transform: translate(-3px, -3px); }
+.ruler a.late { background: var(--ink); }
+
+/* The rail and its stops */
+.rail { position: relative; }
+.stop { position: relative; padding: 36px 0 44px; }
+.stop .wrap { position: relative; }
+.stop .wrap::before { content: ""; position: absolute; left: calc(var(--gutter) + var(--p-rail-x)); top: -36px; bottom: -44px; width: var(--p-rail); background: var(--line-strong); }
+.stop:first-child .wrap::before { top: 0; }
+.dawn { background: var(--p-band-dawn); }
+.daytime { background: var(--p-band-day); }
+.dusk { background: var(--p-band-dusk); }
+.night { background: var(--p-night); color: var(--p-night-ink); }
+.night .stop-grid > .shot { order: 4; }
+.night .wrap::before { background: var(--p-night-ink-2); opacity: .35; }
+
+.stop-grid { padding-left: 32px; display: grid; gap: 14px; }
+.clock { position: relative; font-size: var(--p-clock); font-weight: var(--p-clock-weight); line-height: 1; letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums; margin: 0; }
+.clock::before { content: ""; position: absolute; left: calc(-32px + var(--p-rail-x) - (var(--p-dot) - var(--p-rail)) / 2);
+  top: 0.5em; width: var(--p-dot); height: var(--p-dot); margin-top: calc(var(--p-dot) / -2); border-radius: 50%; background: var(--brand); }
+.clock small { font-size: 0.32em; font-weight: 600; letter-spacing: 0.02em; margin-left: 0.25em; vertical-align: 0.9em; }
+.night .clock::before { background: var(--p-night-dot); }
+.stop h2 { font-size: var(--fs-h3); line-height: 1.25; letter-spacing: -0.01em; font-weight: 700; }
+.stop p.say { font-size: var(--fs-body); color: var(--ink-2); line-height: 1.55; max-width: 38ch; margin-top: 6px; }
+.night p.say { color: var(--p-night-ink-2); }
+.shot { display: grid; gap: 14px; align-content: start; order: 2; }
+.stop-grid > .txt { order: 3; }
+.stop-grid > .clock { order: 1; }
+.dawn:first-child { padding-top: 20px; }
+.dawn:first-child .stop-grid { row-gap: 12px; }
+
+/* Small app crops built with the kit's own classes */
+.rh-app.crop { --app-scale: 0.95; max-width: 360px; box-shadow: 0 18px 40px -26px var(--shadow), 0 1px 4px var(--shadow-soft); }
+.rh-app.crop .a-msgs { padding-bottom: 1em; }
+.rh-app.crop .a-head { padding-bottom: 0.2em; }
+
+/* The paper receipt from the truck, drawn */
+.paper { width: 210px; background: var(--paper); color: var(--paper-ink); border: 1px solid var(--line); border-radius: 4px;
+  padding: 16px 18px 20px; transform: rotate(var(--p-receipt-tilt)); box-shadow: 0 14px 30px -20px var(--shadow);
+  font-family: var(--mono); font-size: 13px; line-height: 1.5; font-variant-numeric: tabular-nums; margin: 4px 0 6px 6px; }
+.paper strong { display: block; text-align: center; letter-spacing: 0.08em; font-size: 14px; }
+.paper hr { border: 0; border-top: 1px dashed var(--line-strong); margin: 8px 0; }
+.paper .ln { display: flex; justify-content: space-between; }
+.paper .tot { font-weight: 700; }
+
+/* Night: Penny saves the question */
+.night-penny { width: 72px; height: 72px; }
+.night .charge { display: inline-block; margin-top: 4px; font-variant-numeric: tabular-nums; }
+
+/* Closing stop */
+.end { background: var(--p-band-dawn); }
+.end h2 { font-size: var(--fs-h2); line-height: 1.08; letter-spacing: -0.03em; }
+.end .act { margin-top: 18px; }
+.end .safe { margin-top: 12px; font-size: var(--fs-small); color: var(--ink-2); line-height: 1.5; max-width: 40ch; }
+.end .stop-grid { padding-bottom: 8px; }
+.stop.end .wrap::before { bottom: auto; height: calc(36px + 0.5 * var(--p-clock)); }
+
+/* Rail fills as you scroll, where supported */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .clock::before { animation: lit linear both; animation-timeline: view(); animation-range: entry 0% cover 40%; }
+    @keyframes lit { from { transform: scale(.4); opacity: .3; } to { transform: scale(1); opacity: 1; } }
+  }
+  .btn { transition: background .2s var(--p-ease); }
+}
+
+@media (min-width: 520px) {
+  .free { max-width: none; }
+}
+@media (min-width: 720px) {
+  .stop-grid { grid-template-columns: 1fr 1fr; gap: 28px; align-items: start; }
+  .stop-grid > .clock { grid-column: 1 / -1; }
+  .stop-grid > .txt { grid-column: 1; grid-row: 2; }
+  .stop-grid > .shot { grid-column: 2; grid-row: 2; }
+}
+@media (min-width: 900px) {
+  .nav { display: flex; }
+  .head-actions { margin-left: 24px; }
+  .menu { display: none; }
+  .hero { padding: 40px 0 40px; }
+  .hero h1 { max-width: none; }
+  .hero .act { margin-top: 24px; }
+  .day { margin-top: 44px; }
+  .ruler { height: 46px; }
+  .ticks b { font-size: var(--fs-micro); }
+  .stop { padding: 64px 0 72px; }
+  .stop .wrap::before { left: calc(var(--gutter) + var(--p-time-col)); top: -64px; bottom: -72px; }
+  .stop:first-child .wrap::before { top: 0; }
+  .stop.end .wrap::before { height: calc(64px + 0.5 * var(--p-clock)); }
+  .stop-grid { padding-left: 0; grid-template-columns: var(--p-time-col) 1fr 380px; gap: 0 48px; }
+  .stop-grid > .clock { grid-column: 1; grid-row: 1 / span 2; position: sticky; top: 32px; text-align: right; padding-right: 24px; align-self: start; }
+  .clock::before { left: auto; right: calc(var(--p-dot) / -2 + var(--p-rail) / 2); top: 0.48em; }
+  .clock small { display: block; margin: 6px 0 0; vertical-align: 0; font-size: 0.24em; }
+  .stop-grid > .txt { grid-column: 2; grid-row: 1; padding-left: 0; }
+  .stop-grid > .shot { grid-row: 1; }
+  .stop-grid > .shot { grid-column: 3; }
+  .end .stop-grid > .txt { grid-column: 2 / -1; }
+  .end h2 { max-width: 18ch; }
+}
+</style>
+</head>
+<body>
+<header class="site-head">
+  <div class="wrap">
+    <a class="brand" href="#" aria-label="Receipt Hunter home">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 86.06 88.29" fill="currentColor"><path d="M48.55,0v22.07c12.19,0,22.07,9.88,22.07,22.07h0c0,12.19-9.88,22.07-22.07,22.07v22.07h37.51V.02h-37.51,0Z"/><path d="M15.45,0H0v88.27h37.51v-22.07c-12.19,0-22.07-9.88-22.07-22.07h0c12.19,0,22.07-9.88,22.07-22.07h0C37.51,9.88,27.63,0,15.44,0h.01Z"/></svg>
+      Receipt Hunter
+    </a>
+    <nav class="nav" aria-label="Main">
+      <a href="#how">How it works</a><a href="#">Pricing</a><a href="#">For bookkeepers</a><a href="#">Sign in</a>
+    </nav>
+    <div class="head-actions">
+      <a class="btn btn-sm" href="#start">Start free</a>
+      <button class="menu" type="button" aria-label="Menu"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M224,128a8,8,0,0,1-8,8H40a8,8,0,0,1,0-16H216A8,8,0,0,1,224,128ZM40,72H216a8,8,0,0,0,0-16H40a8,8,0,0,0,0,16ZM216,184H40a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Z"/></svg></button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap">
+      <h1><span>Penny gets <span class="nw">the receipt</span></span> <span>from whoever made <span class="nw">the charge.</span></span></h1>
+      <div class="act">
+        <a class="btn btn-lg" href="#start">Start free</a>
+        <p class="free">Free while we launch. No card.</p>
+      </div>
+      <!-- Quote slot: a first name, trade and one sentence, after written permission (website PRD section 10) -->
+      <div class="day" id="how">
+        <p class="day-cap">Say you run a 6-person crew. Here is your Monday.</p>
+        <div class="ruler" aria-hidden="true">
+          <div class="ticks">
+            <span><b>6 AM</b></span><span></span><span></span><span><b>9</b></span><span></span><span></span><span><b>Noon</b></span><span></span><span></span><span><b>3</b></span><span></span><span></span><span><b>6 PM</b></span>
+          </div>
+          <a href="#t0702" style="left: 8.6%" tabindex="-1"></a>
+          <a href="#t1040" style="left: 38.9%" tabindex="-1"></a>
+          <a href="#t1612" style="left: 84.9%" tabindex="-1"></a>
+          <a class="late" href="#t1800" style="left: 100%" tabindex="-1"></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="rail">
+    <section class="stop dawn" id="t0702" aria-labelledby="h0702">
+      <div class="wrap"><div class="stop-grid">
+        <p class="clock">7:02<small>AM</small></p>
+        <div class="txt">
+          <h2 id="h0702">Mike's card, no receipt</h2>
+          <p class="say">Mike buys supplies on the company card. Its purchase alert comes to Penny, so she asks Mike, in his app or by email, and by text once he says yes.</p>
+        </div>
+        <div class="shot">
+          <figure class="rh-app crop no-bars" role="img" aria-label="Penny in the app: Mike's card, $412.18 at Oakline Supply. I asked Mike for the receipt in the app.">
+            <div class="a-head">
+              <span></span>
+              <span class="a-who"><img src="kit/penny/front.png" alt="" width="46" height="46"><span class="a-pill">Penny</span></span>
+              <span></span>
+            </div>
+            <div class="a-msgs">
+              <p class="a-time">Today, 7:02 AM</p>
+              <p class="a-penny">Mike's card: $412.18 at Oakline Supply. I asked Mike for the receipt in the app.</p>
+            </div>
+          </figure>
+        </div>
+      </div></div>
+    </section>
+
+    <section class="stop daytime" id="t1040" aria-labelledby="h1040">
+      <div class="wrap"><div class="stop-grid">
+        <p class="clock">10:40<small>AM</small></p>
+        <div class="txt">
+          <h2 id="h1040">A photo from the truck</h2>
+          <p class="say">Snap a photo, forward an email or text it to Penny. She files each one with its charge.</p>
+        </div>
+        <div class="shot">
+          <div class="paper" role="img" aria-label="A paper receipt from Ridge Lumber, total $149.99">
+            <strong>RIDGE LUMBER</strong>
+            <hr>
+            <span class="ln"><span>Supplies</span><span>149.99</span></span>
+            <hr>
+            <span class="ln tot"><span>TOTAL</span><span>149.99</span></span>
+          </div>
+          <figure class="rh-app crop no-bars" role="img" aria-label="Penny in the app: receipt in, $149.99 Ridge Lumber, matched to the card charge">
+            <div class="a-msgs">
+              <p class="a-time">10:40 AM</p>
+              <div class="a-card a-done">
+                <span class="a-card-top"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z"/></svg>Receipt in: $149.99 Ridge Lumber</span>
+                <span class="a-sub">Matched to the card charge</span>
+              </div>
+            </div>
+          </figure>
+        </div>
+      </div></div>
+    </section>
+
+    <section class="stop dusk" id="t1612" aria-labelledby="h1612">
+      <div class="wrap"><div class="stop-grid">
+        <p class="clock">4:12<small>PM</small></p>
+        <div class="txt">
+          <h2 id="h1612">You ask, in your own words</h2>
+          <p class="say">Between jobs, you check on Mike's receipt. Penny knows who she is waiting on.</p>
+        </div>
+        <div class="shot">
+          <figure class="rh-app crop no-bars" role="img" aria-label="Chat with Penny: you ask if Mike sent the Oakline receipt; Penny says not yet, she asked him at 7:02 and will put it in the morning brief">
+            <div class="a-msgs">
+              <p class="a-time">4:12 PM</p>
+              <p class="a-me">Did Mike send the Oakline receipt?</p>
+              <p class="a-penny">Not yet. I asked him at 7:02. He is in tomorrow's brief.</p>
+            </div>
+          </figure>
+        </div>
+      </div></div>
+    </section>
+
+    <section class="stop night" id="t1800" aria-labelledby="h1800">
+      <div class="wrap"><div class="stop-grid">
+        <p class="clock">6:00<small>PM</small></p>
+        <div class="txt">
+          <h2 id="h1800">One charge nobody claimed</h2>
+          <p class="say">Northside Hardware, <span class="charge">$236.97</span>. Penny does not know who bought it yet, so she saves the question for you.</p>
+        </div>
+        <div class="shot">
+          <img class="night-penny" src="kit/penny/calendar.png" alt="" width="72" height="72">
+        </div>
+      </div></div>
+    </section>
+
+    <section class="stop dawn" id="t0800" aria-labelledby="h0800">
+      <div class="wrap"><div class="stop-grid">
+        <p class="clock">8:00<small>AM</small></p>
+        <div class="txt">
+          <h2 id="h0800">Tuesday starts with the brief</h2>
+          <p class="say">Each morning Penny tells you what needs you and who she is waiting on.</p>
+        </div>
+        <div class="shot">
+<!-- RH app screen: the morning brief card. Copy as is; only the frame around .rh-app may change. -->
+<figure class="rh-app crop no-bars" role="img" aria-label="Penny's morning brief in the app: 2 things need Sam, and she is waiting on 5">
+  <div class="a-head">
+    <span class="a-round"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M224,128a8,8,0,0,1-8,8H40a8,8,0,0,1,0-16H216A8,8,0,0,1,224,128ZM40,72H216a8,8,0,0,0,0-16H40a8,8,0,0,0,0,16ZM216,184H40a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Z"/></svg></span>
+    <span class="a-who"><img src="kit/penny/front.png" alt="" width="46" height="46"><span class="a-pill">Penny</span></span>
+    <span class="a-round"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M256,136a8,8,0,0,1-8,8H232v16a8,8,0,0,1-16,0V144H200a8,8,0,0,1,0-16h16V112a8,8,0,0,1,16,0v16h16A8,8,0,0,1,256,136Zm-57.87,58.85a8,8,0,0,1-12.26,10.3C165.75,181.19,138.09,168,108,168s-57.75,13.19-77.87,37.15a8,8,0,0,1-12.25-10.3c14.94-17.78,33.52-30.41,54.17-37.17a68,68,0,1,1,71.9,0C164.6,164.44,183.18,177.07,198.13,194.85ZM108,152a52,52,0,1,0-52-52A52.06,52.06,0,0,0,108,152Z"/></svg></span>
+  </div>
+  <div class="a-msgs">
+    <p class="a-time">Today, 8:00 AM</p>
+    <div class="a-card">
+      <span class="a-label"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M197.58,129.06,146,110l-19-51.62a15.92,15.92,0,0,0-29.88,0L78,110l-51.62,19a15.92,15.92,0,0,0,0,29.88L78,178l19,51.62a15.92,15.92,0,0,0,29.88,0L146,178l51.62-19a15.92,15.92,0,0,0,0-29.88ZM137,164.22a8,8,0,0,0-4.74,4.74L112,223.85,91.78,169A8,8,0,0,0,87,164.22L32.15,144,87,123.78A8,8,0,0,0,91.78,119L112,64.15,132.22,119a8,8,0,0,0,4.74,4.74L191.85,144ZM144,40a8,8,0,0,1,8-8h16V16a8,8,0,0,1,16,0V32h16a8,8,0,0,1,0,16H184V64a8,8,0,0,1-16,0V48H152A8,8,0,0,1,144,40ZM248,88a8,8,0,0,1-8,8h-8v8a8,8,0,0,1-16,0V96h-8a8,8,0,0,1,0-16h8V72a8,8,0,0,1,16,0v8h8A8,8,0,0,1,248,88Z"/></svg>Morning brief · Tue, Oct 27</span>
+      <p class="a-brief-title">Good morning, Sam. 2 things need you, and I'm waiting on 5.</p>
+      <span class="a-row"><span class="a-dot"></span><span>Who bought $236.97 at Northside Hardware?</span><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/></svg></span>
+      <span class="a-row"><span class="a-dot"></span><span>Pick a job for $149.99 at Ridge Lumber</span><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/></svg></span>
+      <span class="a-row"><span class="a-dot wait"></span><span>Waiting on Mike: $412.18, asked yesterday</span><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/></svg></span>
+      <span class="a-row"><span class="a-dot ok"></span><span>October: 46 of 51 receipts in</span><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/></svg></span>
+      <span class="a-link">See them in Payments<svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/></svg></span>
+    </div>
+    <p class="a-penny">Tap a line to answer, or just tell me in your own words.</p>
+  </div>
+  <div class="a-composer"><span class="a-plus"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"/></svg></span><span class="a-ph">Message Penny</span><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M208,56H180.28L166.65,35.56A8,8,0,0,0,160,32H96a8,8,0,0,0-6.65,3.56L75.71,56H48A24,24,0,0,0,24,80V192a24,24,0,0,0,24,24H208a24,24,0,0,0,24-24V80A24,24,0,0,0,208,56Zm8,136a8,8,0,0,1-8,8H48a8,8,0,0,1-8-8V80a8,8,0,0,1,8-8H80a8,8,0,0,0,6.66-3.56L100.28,48h55.43l13.63,20.44A8,8,0,0,0,176,72h32a8,8,0,0,1,8,8ZM128,88a44,44,0,1,0,44,44A44.05,44.05,0,0,0,128,88Zm0,72a28,28,0,1,1,28-28A28,28,0,0,1,128,160Z"/></svg><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M128,176a48.05,48.05,0,0,0,48-48V64a48,48,0,0,0-96,0v64A48.05,48.05,0,0,0,128,176ZM96,64a32,32,0,0,1,64,0v64a32,32,0,0,1-64,0Zm40,143.6V240a8,8,0,0,1-16,0V207.6A80.11,80.11,0,0,1,48,128a8,8,0,0,1,16,0,64,64,0,0,0,128,0,8,8,0,0,1,16,0A80.11,80.11,0,0,1,136,207.6Z"/></svg></div>
+  <div class="a-tabs">
+    <div class="a-bar">
+      <span class="a-tab"><i class="red"></i><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M224,48H32A16,16,0,0,0,16,64V192a16,16,0,0,0,16,16H224a16,16,0,0,0,16-16V64A16,16,0,0,0,224,48Zm0,16V88H32V64Zm0,128H32V104H224v88Zm-16-24a8,8,0,0,1-8,8H168a8,8,0,0,1,0-16h32A8,8,0,0,1,208,168Zm-64,0a8,8,0,0,1-8,8H120a8,8,0,0,1,0-16h16A8,8,0,0,1,144,168Z"/></svg>Payments</span>
+      <span class="a-tab"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM224,48V208a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V48A16,16,0,0,1,48,32H208A16,16,0,0,1,224,48ZM208,208V48H48V208H208Z"/></svg>Asks</span>
+      <span class="a-tab"><i class="violet"></i><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M176,232a8,8,0,0,1-8,8H88a8,8,0,0,1,0-16h80A8,8,0,0,1,176,232Zm40-128a87.55,87.55,0,0,1-33.64,69.21A16.24,16.24,0,0,0,176,186v6a16,16,0,0,1-16,16H96a16,16,0,0,1-16-16v-6a16,16,0,0,0-6.23-12.66A87.59,87.59,0,0,1,40,104.49C39.74,56.83,78.26,17.14,125.88,16A88,88,0,0,1,216,104Zm-16,0a72,72,0,0,0-73.74-72c-39,.92-70.47,33.39-70.26,72.39a71.65,71.65,0,0,0,27.64,56.3A32,32,0,0,1,96,186v6h64v-6a32.15,32.15,0,0,1,12.47-25.35A71.65,71.65,0,0,0,200,104Zm-16.11-9.34a57.6,57.6,0,0,0-46.56-46.55,8,8,0,0,0-2.66,15.78c16.57,2.79,30.63,16.85,33.44,33.45A8,8,0,0,0,176,104a9,9,0,0,0,1.35-.11A8,8,0,0,0,183.89,94.66Z"/></svg>Ideas</span>
+      <span class="a-tab"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M224,200h-8V40a8,8,0,0,0-8-8H152a8,8,0,0,0-8,8V80H96a8,8,0,0,0-8,8v40H48a8,8,0,0,0-8,8v64H32a8,8,0,0,0,0,16H224a8,8,0,0,0,0-16ZM160,48h40V200H160ZM104,96h40V200H104ZM56,144H88v56H56Z"/></svg>Reports</span>
+    </div>
+    <span class="a-chat"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M128,24A104,104,0,0,0,36.18,176.88L24.83,210.93a16,16,0,0,0,20.24,20.24l34.05-11.35A104,104,0,1,0,128,24Zm0,192a87.87,87.87,0,0,1-44.06-11.81,8,8,0,0,0-6.54-.67L40,216,52.47,178.6a8,8,0,0,0-.66-6.54A88,88,0,1,1,128,216Z"/></svg></span>
+  </div>
+</figure>
+        </div>
+      </div></div>
+    </section>
+
+    <section class="stop end" id="start" aria-labelledby="hend">
+      <div class="wrap"><div class="stop-grid">
+        <p class="clock">Today</p>
+        <div class="txt">
+          <h2 id="hend">Give Penny your next workday.</h2>
+          <p class="say">Your AI assistant asks your team for every missing receipt.</p>
+          <p class="say">Forward your cards' purchase alerts and add your people. Any card that emails an alert works.</p>
+          <div class="act">
+            <a class="btn btn-lg" href="#">Start free</a>
+            <p class="free">Free while we launch. No card.</p>
+          </div>
+          <p class="safe">Penny never pays, moves money or signs, and never asks for a bank login.</p>
+          <p class="safe">Built in the Sacramento area with an HVAC contractor and an underground utilities crew.</p>
+        </div>
+      </div></div>
+    </section>
+  </div>
+</main>
+</body>
+</html>

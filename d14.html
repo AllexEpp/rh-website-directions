@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Direction 14: Swiss Utility</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="kit/tokens.css">
+<link rel="stylesheet" href="kit/app.css">
+<style>
+/* Direction 14, Swiss utility.
+   Idea: the page is a set of plain tables you can read in one look; the main picture is a table of charges and whether each has its receipt.
+   Structure: header; short full-width headline; then the 4-row charges ledger (first row open to Penny's first ask in the real chat), Start free and the free line, the sentence and proof (on wide screens the ledger takes 8 columns, the button column 4); an example worked as three numbers;
+   a two-column spec sheet (how it works); a "never" table with the AI line; a planned-price table; the closing button. Every section
+   is one heavy rule, a heading in the left columns and a table in the right columns (12-column grid at 900 px and up). No JavaScript.
+   Proposed tokens:
+   --p-mono: 'IBM Plex Mono' (Google Fonts) for every number, amount and status, so amounts line up in columns like a ledger.
+   --p-h1-hero: 34 px -> 72 px (larger and tighter than --fs-display at 1440; on the phone it stays on 3 lines so the ledger starts on the first screen).
+   --p-h2: 24 px -> 36 px. Section headings stay smaller than usual; the tables carry each section.
+   --p-cell: 15 px table text; --p-label: 12 px mono column heads (above the 11 px floor).
+   --p-rule: 2 px solid ink above each section and table (the Swiss heavy rule); --p-hair: 1 px --line between rows.
+   --p-row: 56 px minimum row height (a thumb-sized tap target for each row that opens).
+   --p-r: 4 px corners on the button; tables and the app crop have none (the crop sits in its row as a log, under a 2 px violet rule).
+   --p-col-gap: 16 px -> 32 px between grid columns.
+   --p-motion: 160 ms ease for the row caret turning; nothing else moves, so Reduce Motion changes nothing that matters.
+   Colours: the token file only (ink, line, brand violet for the one action, attention, waiting and done dots); dark mode uses its dark set. */
+:root {
+  --p-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --p-h1-hero: clamp(2.125rem, 1.2rem + 3.9vw, 4.5rem);
+  --p-h2: clamp(1.5rem, 1.25rem + 1vw, 2.25rem);
+  --p-cell: 0.9375rem;
+  --p-label: 0.75rem;
+  --p-rule: 2px solid var(--ink);
+  --p-hair: 1px solid var(--line);
+  --p-row: 56px;
+  --p-r: 4px;
+  --p-col-gap: clamp(16px, 2.2vw, 32px);
+  --p-motion: 160ms ease;
+}
+body { line-height: 1.5; }
+.wrap { max-width: 1200px; margin: 0 auto; padding: 0 var(--gutter); }
+.num, .mono { font-family: var(--p-mono); font-variant-numeric: tabular-nums; }
+
+/* Header */
+.head { display: flex; align-items: center; gap: 12px; height: 56px; border-bottom: var(--p-hair); }
+.brand { display: flex; align-items: center; gap: 8px; font-weight: 700; text-decoration: none; font-size: 1rem; letter-spacing: -0.01em; }
+.brand svg { width: 20px; height: 20px; }
+.nav { display: none; margin-left: auto; gap: 28px; }
+.nav a { text-decoration: none; color: var(--ink-2); font-size: var(--fs-small); font-weight: 500; }
+.nav a:hover { color: var(--ink); }
+.head-act { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: var(--brand); color: var(--on-brand);
+  text-decoration: none; font-weight: 600; border-radius: var(--p-r); }
+.btn:hover { background: var(--brand-strong); }
+.btn-s { height: 36px; padding: 0 14px; font-size: var(--fs-small); }
+.menu { width: 40px; height: 40px; display: grid; place-items: center; border: var(--p-hair); border-radius: var(--p-r); background: var(--canvas); color: var(--ink); }
+.menu svg { width: 20px; height: 20px; }
+
+/* Sections */
+.sec { border-top: var(--p-rule); padding: 20px 0 48px; }
+.sec-grid { display: grid; gap: 20px; }
+h1 { font-size: var(--p-h1-hero); line-height: 1.02; letter-spacing: -0.035em; font-weight: 800; text-wrap: initial; }
+h1 .nb { white-space: nowrap; }
+h2 { font-size: var(--p-h2); line-height: 1.12; letter-spacing: -0.02em; font-weight: 750; }
+.lead { font-size: var(--fs-lead); color: var(--ink-2); margin-top: 12px; max-width: 30em; }
+.note { font-size: var(--fs-small); color: var(--ink-2); max-width: 36em; }
+
+.hero { border-top: 0; padding-top: 18px; }
+.cta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-top: 18px; }
+.btn-l { height: 50px; padding: 0 20px; font-size: 1.0625rem; }
+.btn-l svg { width: 18px; height: 18px; }
+.free { font-family: var(--p-mono); font-size: var(--p-label); color: var(--ink-2); }
+.proof { margin-top: 14px; font-size: var(--fs-micro); color: var(--ink-2); max-width: 30em; padding-left: 10px; border-left: 2px solid var(--line-strong); }
+
+/* The table, built as rows so each row can open with no script */
+.tbl { margin-top: 8px; border-top: var(--p-rule); font-size: var(--p-cell); }
+.tbl-cap { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; font-family: var(--p-mono); font-size: var(--p-label);
+  text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-2); border-bottom: var(--p-hair); }
+.row { border-bottom: var(--p-hair); }
+.row > summary { list-style: none; cursor: pointer; }
+.row > summary::-webkit-details-marker { display: none; }
+.cells { display: grid; grid-template-columns: 1fr auto 20px; grid-template-areas: "who amt car" "st st ."; column-gap: 12px; row-gap: 2px;
+  align-items: center; min-height: var(--p-row); padding: 10px 0; }
+.c-who { grid-area: who; font-weight: 600; }
+.c-who small { display: block; font-weight: 400; color: var(--ink-2); font-size: var(--fs-micro); }
+.c-amt { grid-area: amt; font-family: var(--p-mono); font-weight: 500; text-align: right; font-variant-numeric: tabular-nums; }
+.c-st { grid-area: st; display: flex; align-items: center; gap: 8px; font-family: var(--p-mono); font-size: var(--fs-micro); color: var(--ink); }
+.c-car { grid-area: car; width: 16px; height: 16px; color: var(--ink-3); transition: transform var(--p-motion); }
+.row[open] .c-car { transform: rotate(90deg); }
+.dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.dot.red { background: var(--attention); }
+.dot.blue { background: var(--waiting); }
+.dot.green { background: var(--done); }
+.open-body { padding: 0 0 14px; }
+.open-body p { font-size: var(--fs-small); color: var(--ink-2); }
+.log-label { display: flex; align-items: center; gap: 8px; font-family: var(--p-mono); font-size: var(--p-label); color: var(--ink-2); text-transform: uppercase; letter-spacing: 0.06em; margin: 0 0 4px; }
+.open-body .rh-app { --app-scale: 0.92; max-width: none; border: 0; border-left: 2px solid var(--brand); border-radius: 0; box-shadow: none; }
+.log-label img { width: 32px; height: 32px; object-fit: contain; }
+.open-body .rh-app .a-head { display: none; }
+.open-body .rh-app .a-msgs > :nth-child(n+3) { display: none; } /* crop: Penny's first ask only */
+.tbl-note { margin: 16px 0 8px; font-size: var(--fs-small); color: var(--ink-2); }
+caption { caption-side: top; text-align: left; padding: 0 0 8px; font-family: var(--p-mono); font-size: var(--p-label); text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-2); }
+.hero .l { display: flex; flex-direction: column; }
+.hero .lead { margin-top: 20px; }
+.open-body .rh-app .a-msgs { padding-top: 0; padding-bottom: 0.2em; }
+.total { display: grid; grid-template-columns: 1fr auto 20px; column-gap: 12px; padding: 12px 0; font-family: var(--p-mono); font-size: var(--fs-micro);
+  border-bottom: var(--p-rule); }
+.total b { font-weight: 600; }
+
+/* Example in three numbers */
+.figs { display: grid; grid-template-columns: repeat(3, 1fr); border-top: var(--p-rule); }
+.fig { padding: 12px 10px 14px 0; border-right: var(--p-hair); }
+.fig + .fig { padding-left: 10px; }
+.fig:last-child { border-right: 0; }
+.fig b { display: block; font-family: var(--p-mono); font-weight: 500; font-size: clamp(2.5rem, 1.9rem + 2.6vw, 4.25rem); line-height: 1; letter-spacing: -0.04em; }
+.fig span { display: block; margin-top: 8px; font-size: var(--fs-micro); color: var(--ink-2); line-height: 1.35; }
+.fig.hot b { color: var(--attention); }
+.after { margin-top: 16px; font-size: var(--fs-body); }
+
+/* Spec sheet: two columns, key and value */
+.spec { border-top: var(--p-rule); }
+.spec div { display: grid; grid-template-columns: 7.5em 1fr; gap: 12px; padding: 12px 0; border-bottom: var(--p-hair); font-size: var(--p-cell); }
+.spec dt { font-family: var(--p-mono); font-size: var(--fs-micro); font-weight: 600; padding-top: 2px; }
+.spec dd { margin: 0; }
+
+/* Plain data tables */
+table { width: 100%; border-collapse: collapse; font-size: var(--p-cell); border-top: var(--p-rule); }
+th { text-align: left; font-family: var(--p-mono); font-size: var(--p-label); font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-2); padding: 8px 8px 8px 0; border-bottom: var(--p-hair); }
+td { padding: 12px 8px 12px 0; border-bottom: var(--p-hair); vertical-align: top; }
+td.r, th.r { text-align: right; padding-right: 0; }
+td.m { font-family: var(--p-mono); font-variant-numeric: tabular-nums; }
+.never { display: inline-flex; align-items: center; gap: 8px; font-family: var(--p-mono); font-weight: 600; color: var(--ink); }
+.now td { background: var(--brand-tint); font-weight: 600; }
+.now td:first-child { padding-left: 8px; }
+.under { margin-top: 14px; }
+.quiet { color: var(--brand-strong); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+/* Close */
+.close { border-top: var(--p-rule); padding: 24px 0 56px; }
+.close .cta { margin-top: 20px; }
+
+@media (min-width: 520px) {
+  .cells { grid-template-columns: 1.4fr 1.2fr auto 20px; grid-template-areas: "who st amt car"; }
+  .total { grid-template-columns: 1fr auto 20px; }
+}
+@media (min-width: 720px) {
+  .sec { padding: 24px 0 80px; }
+  .head { height: 64px; }
+}
+@media (min-width: 900px) {
+  .nav { display: flex; }
+  .nav + .head-act { margin-left: 16px; }
+  .menu { display: none; }
+  .sec-grid { grid-template-columns: repeat(12, 1fr); column-gap: var(--p-col-gap); align-items: start; }
+  .sec-grid > .l { grid-column: 1 / span 4; }
+  .sec-grid > .r { grid-column: 5 / span 8; }
+  .hero { padding-top: 56px; padding-bottom: 96px; }
+  .hero .sec-grid > .full { grid-column: 1 / -1; margin-bottom: 20px; }
+  .hero .sec-grid > .l { grid-row: 2; margin-top: 0; }
+  .hero .sec-grid > .r { grid-row: 2; }
+  .hero .tbl-note { margin-top: 0; }
+  .hero .lead { order: -1; margin: 0 0 20px; }
+  .hero .tbl { margin-top: 0; }
+  h1 .br { display: block; }
+  .open-body .rh-app { max-width: 460px; }
+}
+@media (prefers-reduced-motion: reduce) { .c-car { transition: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="head">
+  <a class="brand" href="#" aria-label="Receipt Hunter, home"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 86.06 88.29" fill="currentColor"><path d="M48.55,0v22.07c12.19,0,22.07,9.88,22.07,22.07h0c0,12.19-9.88,22.07-22.07,22.07v22.07h37.51V.02h-37.51,0Z"/><path d="M15.45,0H0v88.27h37.51v-22.07c-12.19,0-22.07-9.88-22.07-22.07h0c12.19,0,22.07-9.88,22.07-22.07h0C37.51,9.88,27.63,0,15.44,0h.01Z"/></svg>Receipt Hunter</a>
+  <nav class="nav" aria-label="Main"><a href="#how">How it works</a><a href="#pricing">Pricing</a><a href="#pricing">For bookkeepers</a><a href="#">Sign in</a></nav>
+  <div class="head-act">
+    <a class="btn btn-s" href="#start">Start free</a>
+    <button class="menu" type="button" aria-label="Menu"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M224,128a8,8,0,0,1-8,8H40a8,8,0,0,1,0-16H216A8,8,0,0,1,224,128ZM40,72H216a8,8,0,0,0,0-16H40a8,8,0,0,0,0,16ZM216,184H40a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Z"/></svg></button>
+  </div>
+</header>
+
+<main>
+<section class="sec hero" aria-labelledby="h1">
+  <div class="sec-grid">
+    <div class="full">
+      <h1 id="h1"><span class="br">Penny gets <span class="nb">the receipt</span></span> <span class="br">from whoever made <span class="nb">the charge.</span></span></h1>
+    </div>
+    <div class="r">
+      <p class="tbl-note">An example: your card charges and their receipts.</p>
+      <div class="tbl" role="group" aria-label="Example: four card charges and whether each has its receipt">
+        <div class="tbl-cap"><span>Card charge</span><span>Receipt</span></div>
+        <details class="row" open>
+          <summary class="cells"><span class="c-who">Oakline Supply<small>Mike's card</small></span><span class="c-st"><span class="dot blue"></span>Asked Mike</span><span class="c-amt">$412.18</span><svg class="c-car" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/></svg></summary>
+          <div class="open-body">
+<span class="log-label"><img src="kit/penny/front.png" alt="" width="32" height="32">Penny's chat</span>
+<figure class="rh-app no-bars" role="img" aria-label="Penny's chat in the Receipt Hunter app: she tells the owner she asked Mike for the receipt for a $412.18 charge on Mike's card, and files it when his photo comes in">
+  <div class="a-head">
+    <span class="a-round"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M224,128a8,8,0,0,1-8,8H40a8,8,0,0,1,0-16H216A8,8,0,0,1,224,128ZM40,72H216a8,8,0,0,0,0-16H40a8,8,0,0,0,0,16ZM216,184H40a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Z"/></svg></span>
+    <span class="a-who"><img src="kit/penny/front.png" alt="" width="46" height="46"><span class="a-pill">Penny</span></span>
+    <span class="a-round"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M256,136a8,8,0,0,1-8,8H232v16a8,8,0,0,1-16,0V144H200a8,8,0,0,1,0-16h16V112a8,8,0,0,1,16,0v16h16A8,8,0,0,1,256,136Zm-57.87,58.85a8,8,0,0,1-12.26,10.3C165.75,181.19,138.09,168,108,168s-57.75,13.19-77.87,37.15a8,8,0,0,1-12.25-10.3c14.94-17.78,33.52-30.41,54.17-37.17a68,68,0,1,1,71.9,0C164.6,164.44,183.18,177.07,198.13,194.85ZM108,152a52,52,0,1,0-52-52A52.06,52.06,0,0,0,108,152Z"/></svg></span>
+  </div>
+  <div class="a-msgs">
+    <p class="a-time">Today, 4:12 PM</p>
+    <p class="a-penny">Mike's card: $412.18 at Oakline Supply. I asked Mike for the receipt in the app.</p>
+    <p class="a-time">4:31 PM</p>
+    <p class="a-penny">Mike's photo is in. It is for the kitchen job, and it matches the charge.</p>
+    <div class="a-card a-done">
+      <span class="a-card-top"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z"/></svg>Receipt in: $412.18 Oakline Supply</span>
+      <span class="a-sub">Kitchen job · matched to the card charge</span>
+    </div>
+    <p class="a-me">Great, thanks.</p>
+  </div>
+  <div class="a-composer"><span class="a-plus"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"/></svg></span><span class="a-ph">Message Penny</span><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M208,56H180.28L166.65,35.56A8,8,0,0,0,160,32H96a8,8,0,0,0-6.65,3.56L75.71,56H48A24,24,0,0,0,24,80V192a24,24,0,0,0,24,24H208a24,24,0,0,0,24-24V80A24,24,0,0,0,208,56Zm8,136a8,8,0,0,1-8,8H48a8,8,0,0,1-8-8V80a8,8,0,0,1,8-8H80a8,8,0,0,0,6.66-3.56L100.28,48h55.43l13.63,20.44A8,8,0,0,0,176,72h32a8,8,0,0,1,8,8ZM128,88a44,44,0,1,0,44,44A44.05,44.05,0,0,0,128,88Zm0,72a28,28,0,1,1,28-28A28,28,0,0,1,128,160Z"/></svg><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M128,176a48.05,48.05,0,0,0,48-48V64a48,48,0,0,0-96,0v64A48.05,48.05,0,0,0,128,176ZM96,64a32,32,0,0,1,64,0v64a32,32,0,0,1-64,0Zm40,143.6V240a8,8,0,0,1-16,0V207.6A80.11,80.11,0,0,1,48,128a8,8,0,0,1,16,0,64,64,0,0,0,128,0,8,8,0,0,1,16,0A80.11,80.11,0,0,1,136,207.6Z"/></svg></div>
+  <div class="a-tabs">
+    <div class="a-bar">
+      <span class="a-tab"><i class="red"></i><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M224,48H32A16,16,0,0,0,16,64V192a16,16,0,0,0,16,16H224a16,16,0,0,0,16-16V64A16,16,0,0,0,224,48Zm0,16V88H32V64Zm0,128H32V104H224v88Zm-16-24a8,8,0,0,1-8,8H168a8,8,0,0,1,0-16h32A8,8,0,0,1,208,168Zm-64,0a8,8,0,0,1-8,8H120a8,8,0,0,1,0-16h16A8,8,0,0,1,144,168Z"/></svg>Payments</span>
+      <span class="a-tab"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM224,48V208a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V48A16,16,0,0,1,48,32H208A16,16,0,0,1,224,48ZM208,208V48H48V208H208Z"/></svg>Asks</span>
+      <span class="a-tab"><i class="violet"></i><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M176,232a8,8,0,0,1-8,8H88a8,8,0,0,1,0-16h80A8,8,0,0,1,176,232Zm40-128a87.55,87.55,0,0,1-33.64,69.21A16.24,16.24,0,0,0,176,186v6a16,16,0,0,1-16,16H96a16,16,0,0,1-16-16v-6a16,16,0,0,0-6.23-12.66A87.59,87.59,0,0,1,40,104.49C39.74,56.83,78.26,17.14,125.88,16A88,88,0,0,1,216,104Zm-16,0a72,72,0,0,0-73.74-72c-39,.92-70.47,33.39-70.26,72.39a71.65,71.65,0,0,0,27.64,56.3A32,32,0,0,1,96,186v6h64v-6a32.15,32.15,0,0,1,12.47-25.35A71.65,71.65,0,0,0,200,104Zm-16.11-9.34a57.6,57.6,0,0,0-46.56-46.55,8,8,0,0,0-2.66,15.78c16.57,2.79,30.63,16.85,33.44,33.45A8,8,0,0,0,176,104a9,9,0,0,0,1.35-.11A8,8,0,0,0,183.89,94.66Z"/></svg>Ideas</span>
+      <span class="a-tab"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M224,200h-8V40a8,8,0,0,0-8-8H152a8,8,0,0,0-8,8V80H96a8,8,0,0,0-8,8v40H48a8,8,0,0,0-8,8v64H32a8,8,0,0,0,0,16H224a8,8,0,0,0,0-16ZM160,48h40V200H160ZM104,96h40V200H104ZM56,144H88v56H56Z"/></svg>Reports</span>
+    </div>
+    <span class="a-chat"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M128,24A104,104,0,0,0,36.18,176.88L24.83,210.93a16,16,0,0,0,20.24,20.24l34.05-11.35A104,104,0,1,0,128,24Zm0,192a87.87,87.87,0,0,1-44.06-11.81,8,8,0,0,0-6.54-.67L40,216,52.47,178.6a8,8,0,0,0-.66-6.54A88,88,0,1,1,128,216Z"/></svg></span>
+  </div>
+</figure>
+
+          </div>
+        </details>
+        <details class="row">
+          <summary class="cells"><span class="c-who">Northside Hardware</span><span class="c-st"><span class="dot red"></span>Who bought it?</span><span class="c-amt">$236.97</span><svg class="c-car" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/></svg></summary>
+          <div class="open-body"><p>Penny asks you in the morning brief: "Who bought $236.97 at Northside Hardware?"</p></div>
+        </details>
+        <details class="row">
+          <summary class="cells"><span class="c-who">Ridge Lumber</span><span class="c-st"><span class="dot red"></span>Pick a job</span><span class="c-amt">$149.99</span><svg class="c-car" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/></svg></summary>
+          <div class="open-body"><p>"Pick a job for $149.99 at Ridge Lumber." She can put each receipt on a job.</p></div>
+        </details>
+        <div class="total"><span>October</span><b>46 of 51 receipts in</b><span></span></div>
+      </div>
+    </div>
+    <div class="l">
+      <div class="cta" id="start"><a class="btn btn-l" href="#">Start free</a><span class="free">Free while we launch. No card.</span></div>
+      <p class="lead">Your AI assistant asks your team for every missing receipt.</p>
+      <p class="proof">Built in the Sacramento area with an HVAC contractor and an underground utilities crew.</p>
+      <!-- Quote slot: a first name, trade and one sentence, after written permission (website PRD section 10) -->
+    </div>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="h-ex">
+  <div class="sec-grid">
+    <div class="l"><h2 id="h-ex">Say you run a 6&#8209;person crew.</h2></div>
+    <div class="r">
+      <div class="figs">
+        <div class="fig"><b>6</b><span>people on the crew</span></div>
+        <div class="fig"><b>3</b><span>buy supplies on the company card</span></div>
+        <div class="fig hot"><b>14</b><span>receipts missing at month end</span></div>
+      </div>
+      <p class="after">You tap Start free, and Penny starts asking your crew for each receipt.</p>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="how" aria-labelledby="h-how">
+  <div class="sec-grid">
+    <div class="l"><h2 id="h-how">Send it any way. Penny does the rest.</h2></div>
+    <div class="r">
+      <dl class="spec">
+        <div><dt>Card alerts</dt><dd>Forward your cards' purchase alerts and add your people. Any card that emails an alert works.</dd></div>
+        <div><dt>Receipts</dt><dd>Snap a photo, forward an email or text it to Penny. She files each one with its charge.</dd></div>
+        <div><dt>Missing ones</dt><dd>Penny asks the person who made the charge, in their app or by email, and by text once they say yes.</dd></div>
+        <div><dt>Every morning</dt><dd>A brief: what needs you and who she is waiting on.</dd></div>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="h-never">
+  <div class="sec-grid">
+    <div class="l"><h2 id="h-never">What Penny never does</h2></div>
+    <div class="r">
+      <table>
+        <thead><tr><th scope="col">Action</th><th scope="col" class="r">Penny</th></tr></thead>
+        <tbody>
+          <tr><td>Pay, move money or sign</td><td class="r"><span class="never">Never</span></td></tr>
+          <tr><td>Ask for a bank login</td><td class="r"><span class="never">Never</span></td></tr>
+        </tbody>
+      </table>
+      <p class="note under">Penny reads your receipts and messages with AI from Anthropic (Claude) and Google (Gemini), after you agree in the app. Neither one trains its AI on what you send.</p>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="pricing" aria-labelledby="h-price">
+  <div class="sec-grid">
+    <div class="l"><h2 id="h-price">Price</h2></div>
+    <div class="r">
+      <table>
+        <caption>Planned prices</caption>
+        <thead><tr><th scope="col">Plan</th><th scope="col">People</th><th scope="col" class="r">A month</th></tr></thead>
+        <tbody>
+          <tr><td>Solo</td><td class="m">-</td><td class="r m">$9.99</td></tr>
+          <tr><td>Team</td><td class="m">up to 5</td><td class="r m">$29.99</td></tr>
+          <tr><td>Business</td><td class="m">up to 10</td><td class="r m">$99.99</td></tr>
+          <tr><td>Bookkeeper login</td><td class="m">1 per company</td><td class="r m">free</td></tr>
+        </tbody>
+      </table>
+      <p class="note under">Free while we launch, with Team's features and no cap on people or companies. When plans start, you get 30 days' notice in the app, and you choose then.</p>
+      <p class="note under">Every document and its history, viewing, search, export and your bookkeeper's login stay free, even if you stop paying.</p>
+      <p class="note under">Bookkeeper with many clients? <a class="quiet" href="#">Book a call</a></p>
+    </div>
+  </div>
+</section>
+
+<section class="close" aria-labelledby="h-close">
+  <div class="sec-grid">
+    <div class="l"><h2 id="h-close">Forward your first card alert.</h2></div>
+    <div class="r">
+      <div class="cta"><a class="btn btn-l" href="#">Start free</a><span class="free">Free while we launch. No card.</span></div>
+    </div>
+  </div>
+</section>
+</main>
+</div>
+</body>
+</html>

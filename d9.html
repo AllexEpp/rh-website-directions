@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Direction 9: Editorial long read</title>
+<link rel="stylesheet" href="kit/tokens.css">
+<link rel="stylesheet" href="kit/app.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..600&display=swap">
+<style>
+/* Direction 9, Editorial long read.
+   Idea: the home page reads like one magazine story: a newspaper-style nameplate, a big serif headline, and one example
+   crew's month told in short paragraphs, with the example numbers in the margin and Penny's line as a pull quote.
+   Structure: ruled nameplate / front page: kicker, serif headline, standfirst, the margin numbers beside the drop-cap
+   opening, the button with the free line, Penny's 4:12 PM ask as a cropped figure (beside it at 1440) / the story
+   continued with a pull quote / "the next morning" with the brief as a figure / two boxed sidebars / closing line,
+   button and proof line.
+   Works in dark mode on the token file's dark values (paper and ink swap).
+   Proposed tokens (--p-*):
+   --p-serif: 'Newsreader', Georgia, serif. A new font: an optical-size news serif for headline, story and quotes,
+     so the page reads as an article; Inter stays for the header, buttons, notes and the app.
+   --p-fs-head: clamp(2.125rem, 0.6rem + 6.2vw, 6rem) (34 px to 96 px). Three lines on the phone, a front-page 96 px at 1440.
+   --p-fs-deck: clamp(1.25rem, 1.1rem + 0.8vw, 1.75rem) (21 to 28 px). The italic standfirst under the headline.
+   --p-fs-story: clamp(1.125rem, 1.05rem + 0.3vw, 1.3125rem) (18 to 21 px). Serif body text sized for reading.
+   --p-fs-pull: clamp(1.875rem, 1.2rem + 2.6vw, 3.5rem) (30 to 56 px). The pull quote.
+   --p-fs-num: clamp(1.875rem, 1.5rem + 1.6vw, 3.25rem) (30 to 52 px). Serif numerals in the margin notes.
+   --p-margin: 72px. The phone's margin column for the numbers, beside the opening paragraph.
+   --p-drop: 4.1em. The drop cap, three lines of story text.
+   --p-measure: 34em. Story line length, about 65 characters.
+   --p-page: 1240px. The magazine grid is wider than the site's 1120 px, so the margin column fits.
+   --p-margin-col: 220px. The margin column for the example numbers at 900 px and up.
+   --p-rule: 1px solid var(--ink); --p-rule-heavy: 3px solid var(--ink); --p-rule-thin: 1px solid var(--line-strong).
+     Rules, not cards, separate the parts, as in print.
+   --p-progress: 3px. A violet reading bar at the top, driven by scroll in CSS only; hidden with Reduce Motion.
+   Colours: only the token file's; the page sits on --paper, violet --brand is the button, the drop cap is --brand-ink. */
+:root {
+  --p-serif: 'Newsreader', Georgia, 'Times New Roman', serif;
+  --p-fs-head: clamp(2.125rem, 0.6rem + 6.2vw, 6rem);
+  --p-fs-deck: clamp(1.25rem, 1.1rem + 0.8vw, 1.75rem);
+  --p-fs-story: clamp(1.125rem, 1.05rem + 0.3vw, 1.3125rem);
+  --p-fs-pull: clamp(1.875rem, 1.2rem + 2.6vw, 3.5rem);
+  --p-fs-num: clamp(1.875rem, 1.5rem + 1.6vw, 3.25rem);
+  --p-drop: 4.1em;
+  --p-measure: 34em;
+  --p-page: 1240px;
+  --p-margin-col: 220px;
+  --p-margin: 72px;
+  --p-rule: 1px solid var(--ink);
+  --p-rule-heavy: 3px solid var(--ink);
+  --p-rule-thin: 1px solid var(--line-strong);
+  --p-progress: 3px;
+}
+
+body { background: var(--paper); }
+.wrap { width: 100%; max-width: calc(var(--p-page) + 2 * var(--gutter)); margin: 0 auto; padding: 0 var(--gutter); }
+.nw { white-space: nowrap; }
+.serif { font-family: var(--p-serif); }
+
+/* Reading bar */
+.progress { position: fixed; top: 0; left: 0; right: 0; height: var(--p-progress); background: var(--brand);
+  transform-origin: 0 50%; transform: scaleX(0); z-index: 10; }
+@supports (animation-timeline: scroll()) {
+  .progress { animation: read linear both; animation-timeline: scroll(root); }
+  @keyframes read { to { transform: scaleX(1); } }
+}
+@supports not (animation-timeline: scroll()) { .progress { display: none; } }
+@media (prefers-reduced-motion: reduce) { .progress { display: none; } }
+
+/* Nameplate */
+.site-head .wrap:not(.rules-wrap) { height: 56px; display: flex; align-items: center; gap: 12px; }
+.brand { display: inline-flex; align-items: center; gap: 9px; text-decoration: none; color: var(--ink); font-weight: 700;
+  font-size: 1.0625rem; letter-spacing: -0.01em; white-space: nowrap; }
+.brand svg { width: 22px; height: 22px; color: var(--brand); }
+.nav { display: none; gap: 28px; align-items: center; margin-left: auto; }
+.nav a { text-decoration: none; color: var(--ink-2); font-size: var(--fs-small); font-weight: 500; }
+.nav a:hover { color: var(--ink); }
+.head-actions { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; font-weight: 600;
+  background: var(--brand); color: var(--on-brand); border-radius: var(--r-full); white-space: nowrap; font-family: var(--font); }
+.btn:hover { background: var(--brand-strong); }
+.btn-sm { height: 36px; padding: 0 16px; font-size: var(--fs-small); }
+.btn-lg { height: 52px; padding: 0 30px; font-size: 1.0625rem; }
+.menu { width: 40px; height: 40px; display: grid; place-items: center; border: var(--p-rule-thin); border-radius: 50%;
+  background: transparent; color: var(--ink); padding: 0; cursor: pointer; }
+.menu svg { width: 20px; height: 20px; }
+.rules { border-top: var(--p-rule-heavy); border-bottom: var(--p-rule); height: 5px; }
+
+/* Front page */
+.front { padding: 14px 0 48px; }
+.kicker { font-size: var(--fs-micro); font-weight: 650; letter-spacing: 0.08em; text-transform: uppercase; color: var(--brand-ink);
+  font-variant: small-caps; }
+.front h1 { margin-top: 6px; font-family: var(--p-serif); font-size: var(--p-fs-head); font-weight: 600; line-height: 1.04;
+  letter-spacing: -0.02em; font-variation-settings: 'opsz' 72; }
+.deck { margin-top: 10px; font-family: var(--p-serif); font-style: italic; font-size: var(--p-fs-deck); line-height: 1.3; color: var(--ink-2); max-width: 26em; }
+.front-grid { display: grid; gap: 20px; margin-top: 16px; }
+.band { display: grid; grid-template-columns: var(--p-margin) minmax(0, 1fr); gap: 16px; padding-top: 14px; border-top: var(--p-rule); }
+.band .first { font-family: var(--p-serif); font-size: var(--p-fs-story); line-height: 1.5; }
+.first::first-letter { float: left; font-size: var(--p-drop); line-height: 0.8; font-weight: 600; color: var(--brand-ink);
+  padding: 0.06em 0.1em 0 0; font-variation-settings: 'opsz' 72; }
+.notes { list-style: none; margin: 0; padding: 0; }
+.notes li { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 6px; padding: 0 0 6px; }
+.notes li + li { padding-top: 6px; border-top: var(--p-rule-thin); }
+.notes b { font-family: var(--p-serif); font-size: var(--p-fs-num); font-weight: 500; line-height: 1; font-variant-numeric: lining-nums tabular-nums; }
+.notes span { font-size: max(11px, var(--fs-micro)); color: var(--ink-2); line-height: 1.3; }
+.byline { margin-top: 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; }
+.free { font-size: var(--fs-small); color: var(--ink-2); }
+.proof { font-size: var(--fs-small); color: var(--ink-2); line-height: 1.5; max-width: 40ch; }
+.fig { margin: 0; display: grid; gap: 10px; justify-items: center; }
+.fig .rh-app { --app-scale: 0.94; box-shadow: 0 20px 40px -26px var(--shadow), 0 1px 3px var(--shadow-soft); }
+.front .fig .rh-app { --app-scale: 0.9; }
+.cap { width: 100%; max-width: calc(375px * 0.94); display: flex; align-items: center; gap: 10px;
+  padding-top: 8px; border-top: var(--p-rule-thin); font-size: var(--fs-micro); color: var(--ink-2); line-height: 1.4; }
+.cap img { width: 34px; height: 34px; flex: none; }
+
+/* The story */
+.story { padding: 8px 0 56px; }
+.kicker-rule { border-top: var(--p-rule); padding-top: 28px; }
+.story h2, .morning h2, .close h2 { font-family: var(--p-serif); font-weight: 600; font-size: var(--fs-h2); line-height: 1.08;
+  letter-spacing: -0.015em; font-variation-settings: 'opsz' 60; }
+.story-grid { display: grid; gap: 24px; margin-top: 24px; }
+.body p { font-family: var(--p-serif); font-size: var(--p-fs-story); line-height: 1.55; max-width: var(--p-measure); }
+.body p + p { margin-top: 1em; }
+.pull { margin: 8px 0; padding: 4px 0 4px 18px; border-left: 4px solid var(--brand); }
+.pull p { font-family: var(--p-serif); font-style: italic; font-size: var(--p-fs-pull); line-height: 1.12; letter-spacing: -0.01em; }
+
+/* The next morning */
+.morning { padding: 0 0 56px; }
+.morning-grid { display: grid; gap: 24px; border-top: var(--p-rule); padding-top: 28px; }
+.morning .body p { margin-top: 14px; }
+
+/* Sidebars */
+.boxes { padding: 0 0 56px; }
+.boxes .wrap { display: grid; gap: 20px; }
+.box { border-top: var(--p-rule-heavy); background: var(--canvas); padding: 20px 20px 22px; }
+.box h3 { font-family: var(--p-serif); font-size: 1.5rem; font-weight: 600; line-height: 1.15; }
+.box p { margin-top: 10px; font-size: var(--fs-small); color: var(--ink-2); line-height: 1.55; }
+.box a.quiet { display: inline-block; margin-top: 12px; font-size: var(--fs-small); font-weight: 600; color: var(--brand-strong); }
+
+/* Close */
+.close { padding: 8px 0 64px; }
+.close .wrap > div { border-top: var(--p-rule-heavy); padding-top: 28px; display: grid; gap: 20px; justify-items: start; }
+
+/* Phone: the hero chat is cropped to Penny's first ask, under the button */
+@media (max-width: 899px) {
+  .front .fig .rh-app { max-height: 164px; }
+}
+@media (max-width: 519px) {
+  .cta, .close .cta { justify-items: stretch; width: 100%; }
+  .cta .btn-lg { width: 100%; }
+  .close .wrap > div { justify-items: stretch; }
+}
+@media (min-width: 720px) {
+  .boxes .wrap { grid-template-columns: 1fr 1fr; gap: 32px; }
+}
+@media (min-width: 900px) {
+  .site-head .wrap:not(.rules-wrap) { height: 72px; }
+  .front { padding-top: 28px; padding-bottom: 88px; }
+  .kicker { font-size: var(--fs-small); }
+  .front h1 { margin-top: 10px; }
+  .deck { margin-top: 18px; }
+  .front-grid { grid-template-columns: minmax(0, 1fr) 380px; gap: 72px; margin-top: 28px; align-items: start; }
+  .band { grid-template-columns: var(--p-margin-col) minmax(0, 1fr); gap: 40px; padding-top: 24px; }
+  .notes li { padding-bottom: 10px; column-gap: 10px; }
+  .notes li + li { padding-top: 10px; }
+  .notes span { font-size: var(--fs-small); }
+  .band .first { font-size: 1.5rem; line-height: 1.45; }
+  .byline { margin-top: 32px; padding-top: 24px; border-top: var(--p-rule-thin); }
+  .front .fig .rh-app { --app-scale: 1; }
+  .fig .rh-app { --app-scale: 1; }
+  .cap { max-width: 375px; }
+  .story { padding-bottom: 96px; }
+  .kicker-rule { padding-top: 40px; }
+  .story-grid { grid-template-columns: var(--p-margin-col) minmax(0, 36rem) minmax(0, 1fr); column-gap: 56px; row-gap: 0; margin-top: 0; }
+  .body { grid-column: 2; }
+  .pull { grid-column: 3; margin: 0; align-self: center; }
+  .morning { padding-bottom: 96px; }
+  .morning-grid { grid-template-columns: var(--p-margin-col) minmax(0, 1fr) 380px; column-gap: 56px; padding-top: 40px; align-items: start; }
+  .morning-text { grid-column: 2; padding-top: 24px; }
+  .morning .fig { grid-column: 3; }
+  .boxes { padding-bottom: 96px; }
+  .box { padding: 28px 32px 32px; }
+  .box h3 { font-size: 1.75rem; }
+  .box p { font-size: var(--fs-body); }
+  .close { padding-bottom: 120px; }
+  .close .wrap > div { grid-template-columns: minmax(0, 1fr) auto; align-items: end; padding-top: 40px; }
+  .close h2 { font-size: var(--p-fs-pull); max-width: 14em; }
+}
+@media (min-width: 960px) {
+  .nav { display: flex; }
+  .nav + .head-actions { margin-left: 8px; }
+  .menu { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="progress" aria-hidden="true"></div>
+
+<header class="site-head">
+  <div class="wrap">
+    <a class="brand" href="#" aria-label="Receipt Hunter home">
+      <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 86.06 88.29" fill="currentColor"><path d="M48.55,0v22.07c12.19,0,22.07,9.88,22.07,22.07h0c0,12.19-9.88,22.07-22.07,22.07v22.07h37.51V.02h-37.51,0Z"/><path d="M15.45,0H0v88.27h37.51v-22.07c-12.19,0-22.07-9.88-22.07-22.07h0c12.19,0,22.07-9.88,22.07-22.07h0C37.51,9.88,27.63,0,15.44,0h.01Z"/></svg>
+      Receipt Hunter
+    </a>
+    <nav class="nav" aria-label="Main">
+      <a href="#story">How it works</a>
+      <a href="#">Pricing</a>
+      <a href="#bookkeepers">For bookkeepers</a>
+      <a href="#">Sign in</a>
+    </nav>
+    <div class="head-actions">
+      <a class="btn btn-sm" href="#">Start free</a>
+      <button class="menu" type="button" aria-label="Menu"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M224,128a8,8,0,0,1-8,8H40a8,8,0,0,1,0-16H216A8,8,0,0,1,224,128ZM40,72H216a8,8,0,0,0,0-16H40a8,8,0,0,0,0,16ZM216,184H40a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Z"/></svg></button>
+    </div>
+  </div>
+  <div class="wrap rules-wrap"><div class="rules"></div></div>
+</header>
+
+<main>
+<section class="front">
+  <div class="wrap">
+    <p class="kicker">Say you run a <span class="nw">six-person crew.</span></p>
+    <h1>Penny gets the receipt from whoever made <span class="nw">the charge.</span></h1>
+    <p class="deck">Your AI assistant asks your team for every missing receipt.</p>
+    <div class="front-grid">
+      <div class="front-copy">
+        <div class="band">
+          <ul class="notes" aria-label="The example in numbers">
+            <li><b>6</b><span>people</span></li>
+            <li><b>3</b><span>buyers</span></li>
+            <li><b>14</b><span>missing</span></li>
+          </ul>
+          <p class="first">Three of your people buy supplies on the company card. At month end, 14 receipts are missing.</p>
+        </div>
+        <div class="byline">
+          <a class="btn btn-lg" href="#">Start free</a>
+          <span class="free">Free while we launch. No card.</span>
+        </div>
+        <!-- Quote slot: a first name, trade and one sentence, after written permission (website PRD section 10) -->
+      </div>
+      <figure class="fig">
+        <figure class="rh-app no-bars" role="img" aria-label="Penny's chat in the Receipt Hunter app: she tells the owner she asked Mike for the receipt for a $412.18 charge on Mike's card, and files it when his photo comes in">
+  <div class="a-head">
+    <span class="a-round"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M224,128a8,8,0,0,1-8,8H40a8,8,0,0,1,0-16H216A8,8,0,0,1,224,128ZM40,72H216a8,8,0,0,0,0-16H40a8,8,0,0,0,0,16ZM216,184H40a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Z"/></svg></span>
+    <span class="a-who"><img src="kit/penny/front.png" alt="" width="46" height="46"><span class="a-pill">Penny</span></span>
+    <span class="a-round"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M256,136a8,8,0,0,1-8,8H232v16a8,8,0,0,1-16,0V144H200a8,8,0,0,1,0-16h16V112a8,8,0,0,1,16,0v16h16A8,8,0,0,1,256,136Zm-57.87,58.85a8,8,0,0,1-12.26,10.3C165.75,181.19,138.09,168,108,168s-57.75,13.19-77.87,37.15a8,8,0,0,1-12.25-10.3c14.94-17.78,33.52-30.41,54.17-37.17a68,68,0,1,1,71.9,0C164.6,164.44,183.18,177.07,198.13,194.85ZM108,152a52,52,0,1,0-52-52A52.06,52.06,0,0,0,108,152Z"/></svg></span>
+  </div>
+  <div class="a-msgs">
+    <p class="a-time">Today, 4:12 PM</p>
+    <p class="a-penny">Mike's card: $412.18 at Oakline Supply. I asked Mike for the receipt in the app.</p>
+    <p class="a-time">4:31 PM</p>
+    <p class="a-penny">Mike's photo is in. It is for the kitchen job, and it matches the charge.</p>
+    <div class="a-card a-done">
+      <span class="a-card-top"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z"/></svg>Receipt in: $412.18 Oakline Supply</span>
+      <span class="a-sub">Kitchen job · matched to the card charge</span>
+    </div>
+    <p class="a-me">Great, thanks.</p>
+  </div>
+  <div class="a-composer"><span class="a-plus"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"/></svg></span><span class="a-ph">Message Penny</span><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M208,56H180.28L166.65,35.56A8,8,0,0,0,160,32H96a8,8,0,0,0-6.65,3.56L75.71,56H48A24,24,0,0,0,24,80V192a24,24,0,0,0,24,24H208a24,24,0,0,0,24-24V80A24,24,0,0,0,208,56Zm8,136a8,8,0,0,1-8,8H48a8,8,0,0,1-8-8V80a8,8,0,0,1,8-8H80a8,8,0,0,0,6.66-3.56L100.28,48h55.43l13.63,20.44A8,8,0,0,0,176,72h32a8,8,0,0,1,8,8ZM128,88a44,44,0,1,0,44,44A44.05,44.05,0,0,0,128,88Zm0,72a28,28,0,1,1,28-28A28,28,0,0,1,128,160Z"/></svg><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M128,176a48.05,48.05,0,0,0,48-48V64a48,48,0,0,0-96,0v64A48.05,48.05,0,0,0,128,176ZM96,64a32,32,0,0,1,64,0v64a32,32,0,0,1-64,0Zm40,143.6V240a8,8,0,0,1-16,0V207.6A80.11,80.11,0,0,1,48,128a8,8,0,0,1,16,0,64,64,0,0,0,128,0,8,8,0,0,1,16,0A80.11,80.11,0,0,1,136,207.6Z"/></svg></div>
+  <div class="a-tabs">
+    <div class="a-bar">
+      <span class="a-tab"><i class="red"></i><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M224,48H32A16,16,0,0,0,16,64V192a16,16,0,0,0,16,16H224a16,16,0,0,0,16-16V64A16,16,0,0,0,224,48Zm0,16V88H32V64Zm0,128H32V104H224v88Zm-16-24a8,8,0,0,1-8,8H168a8,8,0,0,1,0-16h32A8,8,0,0,1,208,168Zm-64,0a8,8,0,0,1-8,8H120a8,8,0,0,1,0-16h16A8,8,0,0,1,144,168Z"/></svg>Payments</span>
+      <span class="a-tab"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM224,48V208a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V48A16,16,0,0,1,48,32H208A16,16,0,0,1,224,48ZM208,208V48H48V208H208Z"/></svg>Asks</span>
+      <span class="a-tab"><i class="violet"></i><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M176,232a8,8,0,0,1-8,8H88a8,8,0,0,1,0-16h80A8,8,0,0,1,176,232Zm40-128a87.55,87.55,0,0,1-33.64,69.21A16.24,16.24,0,0,0,176,186v6a16,16,0,0,1-16,16H96a16,16,0,0,1-16-16v-6a16,16,0,0,0-6.23-12.66A87.59,87.59,0,0,1,40,104.49C39.74,56.83,78.26,17.14,125.88,16A88,88,0,0,1,216,104Zm-16,0a72,72,0,0,0-73.74-72c-39,.92-70.47,33.39-70.26,72.39a71.65,71.65,0,0,0,27.64,56.3A32,32,0,0,1,96,186v6h64v-6a32.15,32.15,0,0,1,12.47-25.35A71.65,71.65,0,0,0,200,104Zm-16.11-9.34a57.6,57.6,0,0,0-46.56-46.55,8,8,0,0,0-2.66,15.78c16.57,2.79,30.63,16.85,33.44,33.45A8,8,0,0,0,176,104a9,9,0,0,0,1.35-.11A8,8,0,0,0,183.89,94.66Z"/></svg>Ideas</span>
+      <span class="a-tab"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M224,200h-8V40a8,8,0,0,0-8-8H152a8,8,0,0,0-8,8V80H96a8,8,0,0,0-8,8v40H48a8,8,0,0,0-8,8v64H32a8,8,0,0,0,0,16H224a8,8,0,0,0,0-16ZM160,48h40V200H160ZM104,96h40V200H104ZM56,144H88v56H56Z"/></svg>Reports</span>
+    </div>
+    <span class="a-chat"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M128,24A104,104,0,0,0,36.18,176.88L24.83,210.93a16,16,0,0,0,20.24,20.24l34.05-11.35A104,104,0,1,0,128,24Zm0,192a87.87,87.87,0,0,1-44.06-11.81,8,8,0,0,0-6.54-.67L40,216,52.47,178.6a8,8,0,0,0-.66-6.54A88,88,0,1,1,128,216Z"/></svg></span>
+  </div>
+</figure>
+        <figcaption class="cap"><img src="kit/penny/reading.png" alt="" width="44" height="44">Penny, 4:12 PM</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<article class="story" id="story">
+  <div class="wrap">
+    <div class="kicker-rule">
+      <div class="story-grid">
+        <div class="body">
+          <p>Finding them means a glovebox of faded paper and a spreadsheet with empty cells. So you tap Start free. You forward your cards' purchase alerts and add your people. Any card that emails an alert works.</p>
+          <p>Your crew sends each receipt the way that suits them: a photo or a forwarded email, or a text to Penny. She files each one with its charge and can put it on a job.</p>
+        </div>
+        <blockquote class="pull"><p>Penny asks the person who made the charge, in their app or by email, and by text once they say yes.</p></blockquote>
+      </div>
+    </div>
+  </div>
+</article>
+
+<section class="morning">
+  <div class="wrap">
+    <div class="morning-grid">
+      <div class="morning-text">
+        <h2>The next morning, a brief.</h2>
+        <div class="body"><p>Each morning Penny tells you what needs you and who she is waiting on.</p></div>
+      </div>
+      <figure class="fig">
+        <figure class="rh-app" role="img" aria-label="Penny's morning brief in the app: 2 things need Sam, and she is waiting on 5">
+  <div class="a-head">
+    <span class="a-round"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M224,128a8,8,0,0,1-8,8H40a8,8,0,0,1,0-16H216A8,8,0,0,1,224,128ZM40,72H216a8,8,0,0,0,0-16H40a8,8,0,0,0,0,16ZM216,184H40a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Z"/></svg></span>
+    <span class="a-who"><img src="kit/penny/front.png" alt="" width="46" height="46"><span class="a-pill">Penny</span></span>
+    <span class="a-round"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M256,136a8,8,0,0,1-8,8H232v16a8,8,0,0,1-16,0V144H200a8,8,0,0,1,0-16h16V112a8,8,0,0,1,16,0v16h16A8,8,0,0,1,256,136Zm-57.87,58.85a8,8,0,0,1-12.26,10.3C165.75,181.19,138.09,168,108,168s-57.75,13.19-77.87,37.15a8,8,0,0,1-12.25-10.3c14.94-17.78,33.52-30.41,54.17-37.17a68,68,0,1,1,71.9,0C164.6,164.44,183.18,177.07,198.13,194.85ZM108,152a52,52,0,1,0-52-52A52.06,52.06,0,0,0,108,152Z"/></svg></span>
+  </div>
+  <div class="a-msgs">
+    <p class="a-time">Today, 8:00 AM</p>
+    <div class="a-card">
+      <span class="a-label"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M197.58,129.06,146,110l-19-51.62a15.92,15.92,0,0,0-29.88,0L78,110l-51.62,19a15.92,15.92,0,0,0,0,29.88L78,178l19,51.62a15.92,15.92,0,0,0,29.88,0L146,178l51.62-19a15.92,15.92,0,0,0,0-29.88ZM137,164.22a8,8,0,0,0-4.74,4.74L112,223.85,91.78,169A8,8,0,0,0,87,164.22L32.15,144,87,123.78A8,8,0,0,0,91.78,119L112,64.15,132.22,119a8,8,0,0,0,4.74,4.74L191.85,144ZM144,40a8,8,0,0,1,8-8h16V16a8,8,0,0,1,16,0V32h16a8,8,0,0,1,0,16H184V64a8,8,0,0,1-16,0V48H152A8,8,0,0,1,144,40ZM248,88a8,8,0,0,1-8,8h-8v8a8,8,0,0,1-16,0V96h-8a8,8,0,0,1,0-16h8V72a8,8,0,0,1,16,0v8h8A8,8,0,0,1,248,88Z"/></svg>Morning brief · Tue, Oct 27</span>
+      <p class="a-brief-title">Good morning, Sam. 2 things need you, and I'm waiting on 5.</p>
+      <span class="a-row"><span class="a-dot"></span><span>Who bought $236.97 at Northside Hardware?</span><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/></svg></span>
+      <span class="a-row"><span class="a-dot"></span><span>Pick a job for $149.99 at Ridge Lumber</span><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/></svg></span>
+      <span class="a-row"><span class="a-dot wait"></span><span>Waiting on Mike: $412.18, asked yesterday</span><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/></svg></span>
+      <span class="a-row"><span class="a-dot ok"></span><span>October: 46 of 51 receipts in</span><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/></svg></span>
+      <span class="a-link">See them in Payments<svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/></svg></span>
+    </div>
+    <p class="a-penny">Tap a line to answer, or just tell me in your own words.</p>
+  </div>
+  <div class="a-composer"><span class="a-plus"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"/></svg></span><span class="a-ph">Message Penny</span><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M208,56H180.28L166.65,35.56A8,8,0,0,0,160,32H96a8,8,0,0,0-6.65,3.56L75.71,56H48A24,24,0,0,0,24,80V192a24,24,0,0,0,24,24H208a24,24,0,0,0,24-24V80A24,24,0,0,0,208,56Zm8,136a8,8,0,0,1-8,8H48a8,8,0,0,1-8-8V80a8,8,0,0,1,8-8H80a8,8,0,0,0,6.66-3.56L100.28,48h55.43l13.63,20.44A8,8,0,0,0,176,72h32a8,8,0,0,1,8,8ZM128,88a44,44,0,1,0,44,44A44.05,44.05,0,0,0,128,88Zm0,72a28,28,0,1,1,28-28A28,28,0,0,1,128,160Z"/></svg><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M128,176a48.05,48.05,0,0,0,48-48V64a48,48,0,0,0-96,0v64A48.05,48.05,0,0,0,128,176ZM96,64a32,32,0,0,1,64,0v64a32,32,0,0,1-64,0Zm40,143.6V240a8,8,0,0,1-16,0V207.6A80.11,80.11,0,0,1,48,128a8,8,0,0,1,16,0,64,64,0,0,0,128,0,8,8,0,0,1,16,0A80.11,80.11,0,0,1,136,207.6Z"/></svg></div>
+  <div class="a-tabs">
+    <div class="a-bar">
+      <span class="a-tab"><i class="red"></i><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M224,48H32A16,16,0,0,0,16,64V192a16,16,0,0,0,16,16H224a16,16,0,0,0,16-16V64A16,16,0,0,0,224,48Zm0,16V88H32V64Zm0,128H32V104H224v88Zm-16-24a8,8,0,0,1-8,8H168a8,8,0,0,1,0-16h32A8,8,0,0,1,208,168Zm-64,0a8,8,0,0,1-8,8H120a8,8,0,0,1,0-16h16A8,8,0,0,1,144,168Z"/></svg>Payments</span>
+      <span class="a-tab"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM224,48V208a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V48A16,16,0,0,1,48,32H208A16,16,0,0,1,224,48ZM208,208V48H48V208H208Z"/></svg>Asks</span>
+      <span class="a-tab"><i class="violet"></i><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M176,232a8,8,0,0,1-8,8H88a8,8,0,0,1,0-16h80A8,8,0,0,1,176,232Zm40-128a87.55,87.55,0,0,1-33.64,69.21A16.24,16.24,0,0,0,176,186v6a16,16,0,0,1-16,16H96a16,16,0,0,1-16-16v-6a16,16,0,0,0-6.23-12.66A87.59,87.59,0,0,1,40,104.49C39.74,56.83,78.26,17.14,125.88,16A88,88,0,0,1,216,104Zm-16,0a72,72,0,0,0-73.74-72c-39,.92-70.47,33.39-70.26,72.39a71.65,71.65,0,0,0,27.64,56.3A32,32,0,0,1,96,186v6h64v-6a32.15,32.15,0,0,1,12.47-25.35A71.65,71.65,0,0,0,200,104Zm-16.11-9.34a57.6,57.6,0,0,0-46.56-46.55,8,8,0,0,0-2.66,15.78c16.57,2.79,30.63,16.85,33.44,33.45A8,8,0,0,0,176,104a9,9,0,0,0,1.35-.11A8,8,0,0,0,183.89,94.66Z"/></svg>Ideas</span>
+      <span class="a-tab"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M224,200h-8V40a8,8,0,0,0-8-8H152a8,8,0,0,0-8,8V80H96a8,8,0,0,0-8,8v40H48a8,8,0,0,0-8,8v64H32a8,8,0,0,0,0,16H224a8,8,0,0,0,0-16ZM160,48h40V200H160ZM104,96h40V200H104ZM56,144H88v56H56Z"/></svg>Reports</span>
+    </div>
+    <span class="a-chat"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M128,24A104,104,0,0,0,36.18,176.88L24.83,210.93a16,16,0,0,0,20.24,20.24l34.05-11.35A104,104,0,1,0,128,24Zm0,192a87.87,87.87,0,0,1-44.06-11.81,8,8,0,0,0-6.54-.67L40,216,52.47,178.6a8,8,0,0,0-.66-6.54A88,88,0,1,1,128,216Z"/></svg></span>
+  </div>
+</figure>
+        <figcaption class="cap">The morning brief, as Penny sends it.</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<aside class="boxes">
+  <div class="wrap">
+    <div class="box">
+      <h3>What Penny never does</h3>
+      <p>Penny never pays, moves money or signs, and never asks for a bank login.</p>
+      <p>Penny reads your receipts and messages with AI from Anthropic (Claude) and Google (Gemini), after you agree in the app. Neither one trains its AI on what you send.</p>
+    </div>
+    <div class="box" id="bookkeepers">
+      <h3>If you keep the books</h3>
+      <p>Say you have 30 clients. Penny asks each client's people for their own charges, and each company gets one free bookkeeper login.</p>
+      <a class="quiet" href="#">Book a call</a>
+    </div>
+  </div>
+</aside>
+
+<section class="close">
+  <div class="wrap">
+    <div>
+      <h2>Start with this month's missing receipts.</h2>
+      <div class="cta">
+        <a class="btn btn-lg" href="#">Start free</a>
+        <span class="free">Free while we launch. No card.</span>
+      </div>
+      <p class="proof">Built in the Sacramento area with an HVAC contractor and an underground utilities crew.</p>
+    </div>
+  </div>
+</section>
+</main>
+</body>
+</html>

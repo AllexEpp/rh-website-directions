@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>RH Website Directions 1-21</title>
+<style>
+/* Layout: one column of tappable rows on the phone (picture left, number and idea right), two or three columns on a desktop. */
+@font-face { font-family: "Inter"; src: url("kit/inter-latin-wght.woff2") format("woff2"); font-weight: 100 900; font-display: swap; }
+:root {
+  --bg: #f6f5f9; --card: #ffffff; --ink: #17151f; --ink-2: #55526a; --line: #e4e1ee; --brand: #7c3aed; --brand-ink: #5b21b6;
+  --sans: "Inter", -apple-system, system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #121118; --card: #1c1a24; --ink: #f2f0f8; --ink-2: #b4b0c6; --line: #2e2b3a; --brand: #a78bfa; --brand-ink: #c4b5fd; color-scheme: dark; } }
+:root[data-theme="dark"] { --bg: #121118; --card: #1c1a24; --ink: #f2f0f8; --ink-2: #b4b0c6; --line: #2e2b3a; --brand: #a78bfa; --brand-ink: #c4b5fd; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.45 var(--sans); }
+.wrap { max-width: 1180px; margin: 0 auto; padding-block: 28px 56px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 28px; }
+h1 { font-size: clamp(28px, 5vw, 44px); line-height: 1.1; letter-spacing: -0.02em; text-wrap: balance; margin: 0; }
+.lead { color: var(--ink-2); max-width: 60ch; margin: 10px 0 0; }
+h2 { font-size: 15px; font-weight: 600; color: var(--ink-2); margin: 0 0 10px; }
+ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+@media (min-width: 720px) { ul { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; } }
+@media (min-width: 1080px) { ul { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.dir { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 14px; align-items: start; padding: 10px; background: var(--card); border: 1px solid var(--line); border-radius: 18px; color: inherit; text-decoration: none; min-height: 100%; }
+.dir:hover { border-color: var(--brand); }
+.dir:focus-visible { outline: 3px solid var(--brand); outline-offset: 2px; }
+.dir img { width: 92px; height: auto; border-radius: 10px; border: 1px solid var(--line); display: block; }
+.txt { display: grid; gap: 4px; min-width: 0; padding-top: 4px; }
+.num { font-size: 13px; font-weight: 700; color: var(--brand-ink); font-variant-numeric: tabular-nums; }
+.name { font-size: 18px; font-weight: 650; line-height: 1.2; }
+.idea { font-size: 14px; color: var(--ink-2); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Website directions 1 to 21</h1>
+    <p class="lead">Tap a direction to open it full size and scroll it as a visitor would. Swipe back to come here.</p>
+  </header>
+  <section aria-labelledby="g1">
+    <h2 id="g1">1 to 7: the same page in seven looks</h2>
+    <ul>
+    <li><a class="dir" href="d1.html">
+      <img src="thumbs/d1.jpg" alt="" width="240" height="520" loading="lazy">
+      <span class="txt"><span class="num">1</span><span class="name">Calm violet</span><span class="idea">Light and airy, closest to the app. White page, the real chat screen on a soft violet panel, violet only for the button and one phrase, mint only to mean done.</span></span>
+    </a></li>
+    <li><a class="dir" href="d2.html">
+      <img src="thumbs/d2.jpg" alt="" width="240" height="520" loading="lazy">
+      <span class="txt"><span class="num">2</span><span class="name">Fresh mint</span><span class="idea">A mint ground with dark text and a dark button; violet only on the word &quot;Penny&quot;. The app screen hangs out of the mint band onto white.</span></span>
+    </a></li>
+    <li><a class="dir" href="d3.html">
+      <img src="thumbs/d3.jpg" alt="" width="240" height="520" loading="lazy">
+      <span class="txt"><span class="num">3</span><span class="name">Big type</span><span class="idea">A white page where a very large black headline is the picture, with &quot;charge&quot; in violet. The app screen rises beside its last line.</span></span>
+    </a></li>
+    <li><a class="dir" href="d4.html">
+      <img src="thumbs/d4.jpg" alt="" width="240" height="520" loading="lazy">
+      <span class="txt"><span class="num">4</span><span class="name">Night violet</span><span class="idea">Dark by design: a flat deep violet ground, light text, mint for small highlights, the app shown in its dark mode. No glow, no gradient.</span></span>
+    </a></li>
+    <li><a class="dir" href="d5.html">
+      <img src="thumbs/d5.jpg" alt="" width="240" height="520" loading="lazy">
+      <span class="txt"><span class="num">5</span><span class="name">Job site</span><span class="idea">Warm paper tones and heavy headlines for the trades, with a large slot for a real crew photo (the dashed frame is a note for you, not part of the page).</span></span>
+    </a></li>
+    <li><a class="dir" href="d6.html">
+      <img src="thumbs/d6.jpg" alt="" width="240" height="520" loading="lazy">
+      <span class="txt"><span class="num">6</span><span class="name">Receipt paper</span><span class="idea">The hero is a paper till receipt with a torn edge, the headline printed in a typewriter face, the steps printed like receipt lines.</span></span>
+    </a></li>
+    <li><a class="dir" href="d7.html">
+      <img src="thumbs/d7.jpg" alt="" width="240" height="520" loading="lazy">
+      <span class="txt"><span class="num">7</span><span class="name">Penny up front</span><span class="idea">Friendly: soft violet and mint shapes, rounded corners, and a larger drawn Penny waving toward the app screen.</span></span>
+    </a></li>
+    </ul>
+  </section>
+  <section aria-labelledby="g2">
+    <h2 id="g2">8 to 14: seven different page structures</h2>
+    <ul>
+    <li><a class="dir" href="d8.html">
+      <img src="thumbs/d8.jpg" alt="" width="240" height="520" loading="lazy">
+      <span class="txt"><span class="num">8</span><span class="name">Chat with Penny</span><span class="idea">The page is one conversation: Penny&#x27;s messages carry every fact, your questions sit in grey bubbles on the right, and the button is a reply chip. On a desktop it looks like a messaging app.</span></span>
+    </a></li>
+    <li><a class="dir" href="d9.html">
+      <img src="thumbs/d9.jpg" alt="" width="240" height="520" loading="lazy">
+      <span class="txt"><span class="num">9</span><span class="name">Editorial long read</span><span class="idea">A magazine story: a nameplate, a big serif headline and one example crew&#x27;s month in short paragraphs, with the numbers in the margin and Penny&#x27;s line as a pull quote.</span></span>
+    </a></li>
+    <li><a class="dir" href="d10.html">
+      <img src="thumbs/d10.jpg" alt="" width="240" height="520" loading="lazy">
+      <span class="txt"><span class="num">10</span><span class="name">Bento grid</span><span class="idea">Tiles of different sizes, each a small live demo: a card alert turning into a matched receipt, an email arriving, a job picked, the morning brief. The violet tile is the button.</span></span>
+    </a></li>
+    <li><a class="dir" href="d11.html">
+      <img src="thumbs/d11.jpg" alt="" width="240" height="520" loading="lazy">
+      <span class="txt"><span class="num">11</span><span class="name">Cinematic scroll</span><span class="idea">One receipt is the hero: each screen is one shot of its trip, from a crumpled photo in the camera to a filed line in Payments, with one big caption under each picture.</span></span>
+    </a></li>
+    <li><a class="dir" href="d12.html">
+      <img src="thumbs/d12.jpg" alt="" width="240" height="520" loading="lazy">
+      <span class="txt"><span class="num">12</span><span class="name">Two sides</span><span class="idea">A seam down the middle: the owner&#x27;s month now (texts to the crew, faded receipts, a sheet with gaps) against the same moment with Penny. On a phone a switch flips between them.</span></span>
+    </a></li>
+    <li><a class="dir" href="d13.html">
+      <img src="thumbs/d13.jpg" alt="" width="240" height="520" loading="lazy">
+      <span class="txt"><span class="num">13</span><span class="name">A workday</span><span class="idea">One Monday on a clock: 7:02 AM the card alert, 10:40 AM a photo from the truck, 4:12 PM the chat, a dark overnight band, then the 8:00 AM brief. The page goes from morning light to night.</span></span>
+    </a></li>
+    <li><a class="dir" href="d14.html">
+      <img src="thumbs/d14.jpg" alt="" width="240" height="520" loading="lazy">
+      <span class="txt"><span class="num">14</span><span class="name">Swiss utility</span><span class="idea">Plain tables you read in one look: four charges and whether each has its receipt, a spec sheet, a &quot;never&quot; table and the planned prices. Monospaced numbers on a strict grid.</span></span>
+    </a></li>
+    </ul>
+  </section>
+  <section aria-labelledby="g3">
+    <h2 id="g3">15 to 21: seven different messages</h2>
+    <ul>
+    <li><a class="dir" href="d15.html">
+      <img src="thumbs/d15.jpg" alt="" width="240" height="520" loading="lazy">
+      <span class="txt"><span class="num">15</span><span class="name">The Shoebox</span><span class="idea">For the solo owner: &quot;Too small for big accounting software?&quot; Penny empties your receipt shoebox for tax time.</span></span>
+    </a></li>
+    <li><a class="dir" href="d16.html">
+      <img src="thumbs/d16.jpg" alt="" width="240" height="520" loading="lazy">
+      <span class="txt"><span class="num">16</span><span class="name">The answered letter</span><span class="idea">For the bookkeeper: &quot;Delete the 'what was this charge?' email.&quot; Penny answers it before you send it.</span></span>
+    </a></li>
+    <li><a class="dir" href="d17.html">
+      <img src="thumbs/d17.jpg" alt="" width="240" height="520" loading="lazy">
+      <span class="txt"><span class="num">17</span><span class="name">Point and Shoot</span><span class="idea">For the owner on the go: &quot;Done on the walk to your car.&quot; Penny asks, you snap, she files.</span></span>
+    </a></li>
+    <li><a class="dir" href="d18.html">
+      <img src="thumbs/d18.jpg" alt="" width="240" height="520" loading="lazy">
+      <span class="txt"><span class="num">18</span><span class="name">Your morning message</span><span class="idea">For the owner who never opens the app: &quot;One message a morning. That's your part.&quot;</span></span>
+    </a></li>
+    <li><a class="dir" href="d19.html">
+      <img src="thumbs/d19.jpg" alt="" width="240" height="520" loading="lazy">
+      <span class="txt"><span class="num">19</span><span class="name">Job Board</span><span class="idea">For the contractor costing a job: &quot;Every receipt on its job.&quot; Receipts drop into job lanes.</span></span>
+    </a></li>
+    <li><a class="dir" href="d20.html">
+      <img src="thumbs/d20.jpg" alt="" width="240" height="520" loading="lazy">
+      <span class="txt"><span class="num">20</span><span class="name">Printed promise</span><span class="idea">For the careful owner: &quot;Penny never asks for your bank login.&quot; A receipt strip of what she never does.</span></span>
+    </a></li>
+    <li><a class="dir" href="d21.html">
+      <img src="thumbs/d21.jpg" alt="" width="240" height="520" loading="lazy">
+      <span class="txt"><span class="num">21</span><span class="name">Receipt police</span><span class="idea">For the owner tired of chasing: &quot;Retire from the receipt police.&quot; Hand Penny the badge.</span></span>
+    </a></li>
+    </ul>
+  </section>
+</div>
+</body>
+</html>

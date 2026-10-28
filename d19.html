@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Direction 19: Job Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="kit/tokens.css">
+<link rel="stylesheet" href="kit/app.css">
+<style>
+/* Direction 19, Job Board.
+   Message: every receipt lands on its job (research angle 5, "Which job was that for?").
+   Customer: a contractor or project manager costing a job, looking at a lumber charge with no job on it.
+   Idea: the page is a sorting board. Two job lanes (the kitchen job from the app's data, a bathroom job framed as an example)
+   take each receipt as it falls; each lane adds up its own total from the app's example amounts (FACTS C3).
+   Structure: header; headline, line; the board (Penny's ask "Pick a job for $149.99 at Ridge Lumber"
+   above two lanes), which stays pinned while three short steps pass it (phone: pinned under the header; 1440: pinned in the right
+   column beside the steps); Start free, free line and proof under the board; the real chat screen with Penny's pose; the close (F5) with its button and free line; the motion line.
+   Motion: moves on scroll. Each step drops the next receipt into its lane and the lane's total counts up.
+   Reduce Motion or no JavaScript: every receipt already sits in its lane with the final totals, the ask shows its picked job.
+   Proposed tokens:
+   --p-mono: 'IBM Plex Mono' (Google Fonts) for amounts and totals, so lane totals read like a job cost sheet.
+   --p-lane: var(--recessed), the lane tray; --p-lane-edge: 1.5px dashed var(--line-strong), the empty drop zone, so a lane looks like a slot to fill.
+   --p-slip: var(--paper) with --p-slip-ink var(--paper-ink): each receipt is a small paper slip with a torn bottom edge.
+   --p-tab-r: 10px 10px 0 0, the folder tab on each lane name (a job folder, drawn with type and a shape only).
+   --p-total: 22px -> 30px, 600, mono: the lane total, the one number each lane is about.
+   --p-drop: 560ms cubic-bezier(.2,.9,.3,1.2), the fall with a small settle; --p-count: 480 ms for a total to count up.
+   --p-r-btn: var(--r-full), the main button pill, matching the app's chips.
+   Colours: token file only (violet for the one action, done green for a placed receipt); dark mode uses the token file's dark set. */
+:root {
+  --p-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --p-lane: var(--recessed);
+  --p-lane-edge: 1.5px dashed var(--line-strong);
+  --p-slip: var(--paper);
+  --p-slip-ink: var(--paper-ink);
+  --p-tab-r: 10px 10px 0 0;
+  --p-total: clamp(1.375rem, 1.15rem + 0.8vw, 1.875rem);
+  --p-drop: 560ms cubic-bezier(.2, .9, .3, 1.2);
+  --p-r-btn: var(--r-full);
+}
+html, body { overflow-x: clip; }
+body { line-height: 1.5; }
+.wrap { max-width: var(--page); margin: 0 auto; padding: 0 var(--gutter); }
+.mono { font-family: var(--p-mono); font-variant-numeric: tabular-nums; }
+
+/* Header */
+.head { position: sticky; top: 0; z-index: 5; background: var(--canvas); border-bottom: 1px solid var(--line); }
+.head .wrap { display: flex; align-items: center; height: 56px; }
+.brand { display: flex; align-items: center; gap: 8px; font-weight: 700; text-decoration: none; letter-spacing: -0.01em; }
+.brand svg { width: 20px; height: 20px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: var(--brand); color: var(--on-brand);
+  text-decoration: none; font-weight: 600; border-radius: var(--p-r-btn); }
+.btn:hover { background: var(--brand-strong); }
+.btn-s { margin-left: auto; height: 38px; padding: 0 16px; font-size: var(--fs-small); }
+.btn-l { height: 52px; padding: 0 28px; font-size: 1.0625rem; width: 100%; }
+@media (min-width: 520px) { .btn-l { width: auto; } }
+
+/* Hero and board */
+.sort { display: grid; gap: 0; padding-top: 20px; }
+.intro h1 { font-size: var(--fs-display); line-height: 1.04; letter-spacing: -0.035em; font-weight: 750; }
+.intro .lead { font-size: var(--fs-lead); color: var(--ink-2); margin-top: 10px; max-width: 30ch; }
+.cta { margin-top: 16px; display: grid; gap: 8px; justify-items: start; }
+.cta .btn-l { justify-self: stretch; }
+@media (min-width: 520px) { .cta .btn-l { justify-self: start; } }
+.free { font-size: var(--fs-small); color: var(--ink-2); }
+.proof { font-size: var(--fs-micro); color: var(--ink-3); max-width: 40ch; }
+
+.board-col { position: sticky; top: 56px; z-index: 3; background: var(--canvas); padding: 12px 0 10px; margin-top: 4px;
+  box-shadow: 0 14px 14px -14px var(--shadow-soft); margin: 0 calc(-1 * var(--gutter)); }
+.board { padding: 0 var(--gutter); display: grid; gap: 10px; }
+.board-tag { font-size: var(--fs-micro); color: var(--ink-3); }
+
+/* Penny's ask, made of the kit's own app classes */
+.ask.rh-app { --app-scale: 0.92; max-width: none; border-radius: 20px; box-shadow: 0 10px 24px -16px var(--shadow), 0 1px 4px var(--shadow-soft); }
+.ask .a-msgs { padding: 0.75em 0.9em 0.85em; gap: 0.5em; }
+.ask .a-from { display: flex; align-items: center; gap: 0.5em; font-weight: 600; font-size: 0.93em; }
+.ask .a-from img { width: 1.9em; height: 1.9em; }
+.ask .a-from .a-time { margin: 0 0 0 auto; }
+.ask .a-card { gap: 0.55em; }
+.chips { display: flex; gap: 0.5em; flex-wrap: wrap; }
+.chip { display: inline-flex; align-items: center; gap: 0.35em; border: 1px solid var(--line-strong); border-radius: var(--r-full);
+  padding: 0.3em 0.85em; font-size: 0.9em; font-weight: 600; color: var(--ink); background: var(--canvas); transition: background 240ms, color 240ms, border-color 240ms; }
+.chip svg { width: 1.05em; height: 1.05em; display: none; }
+.chip.on { background: var(--brand); border-color: var(--brand); color: var(--on-brand); }
+.chip.on svg { display: block; }
+
+.lanes { display: grid; grid-template-columns: repeat(2, minmax(150px, 1fr)); gap: 10px; overflow-x: auto; overscroll-behavior-x: contain; }
+.lane { display: grid; grid-template-rows: auto 1fr auto; }
+.lane-name { justify-self: start; background: var(--p-lane); border-radius: var(--p-tab-r); padding: 6px 12px 4px; font-weight: 650; font-size: var(--fs-small); }
+.lane-body { background: var(--p-lane); border-radius: 0 var(--r-md) 0 0; padding: 8px; display: grid; align-content: start; gap: 6px; min-height: 112px; position: relative; }
+.lane-body::before { content: ""; position: absolute; inset: 8px; border: var(--p-lane-edge); border-radius: var(--r-sm); pointer-events: none; }
+.slip { position: relative; z-index: 1; background: var(--p-slip); color: var(--p-slip-ink); padding: 7px 9px 11px; display: grid; gap: 0;
+  font-size: var(--fs-micro); line-height: 1.3; box-shadow: 0 2px 5px var(--shadow-soft);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 4px), 92% 100%, 84% calc(100% - 4px), 76% 100%, 68% calc(100% - 4px), 60% 100%, 52% calc(100% - 4px), 44% 100%, 36% calc(100% - 4px), 28% 100%, 20% calc(100% - 4px), 12% 100%, 4% calc(100% - 4px), 0 100%);
+  transition: transform var(--p-drop), opacity 300ms ease; }
+.slip b { font-weight: 600; font-family: var(--p-mono); font-size: var(--fs-small); }
+.lane-total { background: var(--p-lane); border-radius: 0 0 var(--r-md) var(--r-md); padding: 4px 12px 10px; display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.lane-total span { font-size: var(--fs-micro); color: var(--ink-2); }
+.lane-total b { font-family: var(--p-mono); font-weight: 600; font-size: var(--p-total); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.board-src { font-size: var(--fs-micro); color: var(--ink-3); }
+
+/* Scroll states (only with JavaScript on and motion allowed) */
+.sorting .slip:not(.in) { opacity: 0; transform: translateY(-70px) rotate(-4deg); }
+
+/* Steps */
+.steps { list-style: none; margin: 16px 0 0; padding: 0; border-top: 1px solid var(--line); }
+.step { padding: 24px 0; display: grid; align-content: start; gap: 6px; border-top: 1px solid var(--line); }
+.step:first-child { border-top: 0; }
+.step h2 { font-size: var(--fs-h3); line-height: 1.25; letter-spacing: -0.01em; }
+.step p { color: var(--ink-2); max-width: 36ch; }
+.sorting .step { min-height: 46vh; }
+.step .amt { font-family: var(--p-mono); font-size: var(--fs-small); color: var(--ink-3); }
+
+/* Chat */
+.told { padding: var(--section) 0; background: var(--recessed); }
+.told .wrap { display: grid; gap: 24px; justify-items: center; }
+.told-h { display: flex; align-items: center; gap: 12px; width: 100%; max-width: 375px; }
+.told h2 { font-size: var(--fs-h2); line-height: 1.1; letter-spacing: -0.03em; flex: 1; }
+.told-h .pose { width: 72px; height: 72px; flex: none; }
+.told-pic { width: 100%; max-width: 375px; }
+.told-pic .rh-app { --app-scale: 0.96; }
+
+/* Close */
+.close { padding: var(--section) 0 40px; }
+.close .wrap { display: grid; gap: 16px; justify-items: center; text-align: center; }
+.close h2 { font-size: var(--fs-h2); line-height: 1.1; letter-spacing: -0.03em; max-width: 18ch; }
+.close p.never { color: var(--ink-2); max-width: 38ch; }
+.close .cta { justify-items: center; width: 100%; }
+.close .cta .btn-l { justify-self: stretch; }
+@media (min-width: 520px) { .close .cta .btn-l { justify-self: center; } }
+.motion-line { font-size: var(--fs-micro); color: var(--ink-3); margin-top: 40px; }
+
+@media (min-width: 900px) {
+  .head .wrap { height: 64px; }
+  .sort { grid-template-columns: 1fr 1.05fr; column-gap: 72px; padding-top: 72px; align-items: start; }
+  .intro { grid-column: 1; grid-row: 1; }
+  .cta-hero { grid-column: 1; grid-row: 2; margin-top: 24px; }
+  .steps { grid-column: 1; grid-row: 3; margin-top: 56px; }
+  .board-col { grid-column: 2; grid-row: 1 / span 3; top: 96px; margin: 0; padding: 0; box-shadow: none; background: none; }
+  .board { padding: 0; gap: 14px; }
+  .ask.rh-app { --app-scale: 1.05; }
+  .lanes { gap: 16px; }
+  .lane-body { min-height: 190px; padding: 12px; gap: 10px; }
+  .lane-body::before { inset: 12px; }
+  .slip { font-size: var(--fs-small); padding: 10px 12px 14px; }
+  .slip b { font-size: var(--fs-body); }
+  .step { padding: 32px 0; }
+  .sorting .step { min-height: 52vh; }
+  .step h2 { font-size: 1.5rem; }
+  .step p { font-size: 1.0625rem; }
+  .told .wrap { grid-template-columns: 1fr 1fr; align-items: center; justify-items: start; column-gap: 72px; }
+  .told-h { max-width: 520px; flex-direction: column; align-items: flex-start; }
+  .told h2 { font-size: var(--fs-display); }
+  .told-pic { justify-self: center; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .slip, .chip { transition: none; }
+}
+</style>
+</head>
+<body>
+<header class="head">
+  <div class="wrap">
+    <a class="brand" href="#" aria-label="Receipt Hunter, home"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 86.06 88.29" fill="currentColor"><path d="M48.55,0v22.07c12.19,0,22.07,9.88,22.07,22.07h0c0,12.19-9.88,22.07-22.07,22.07v22.07h37.51V.02h-37.51,0Z"/><path d="M15.45,0H0v88.27h37.51v-22.07c-12.19,0-22.07-9.880-22.07-22.07h0c12.19,0,22.07-9.88,22.07-22.07h0C37.51,9.88,27.63,0,15.44,0h.01Z"/></svg>Receipt Hunter</a>
+    <a class="btn btn-s" href="#start">Start free</a>
+  </div>
+</header>
+
+<main>
+<section class="wrap sort" id="board" aria-labelledby="h1">
+  <div class="intro">
+    <h1 id="h1">Every receipt on its job.</h1>
+    <p class="lead">Penny matches each receipt to its card charge and asks which job it belongs to.</p>
+  </div>
+
+  <div class="board-col">
+    <div class="board" data-step="3">
+      <!-- App card built with the kit's .a-* classes; the line is the app's own: "Pick a job for $149.99 at Ridge Lumber" (FACTS F5, kit/app-brief.html) -->
+      <div class="rh-app ask" role="img" aria-label="Penny in the app: Pick a job for $149.99 at Ridge Lumber, with the choices Kitchen job and Bathroom job">
+        <div class="a-msgs">
+          <span class="a-from"><img src="kit/penny/front.png" alt="" width="46" height="46">Penny<span class="a-time">4:12 PM</span></span>
+          <div class="a-card">
+            <span class="a-card-top"><span class="a-dot"></span>Pick a job for $149.99 at Ridge Lumber</span>
+            <span class="chips">
+              <span class="chip on" data-pick><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M229.66,77.66l-128,128a8,8,0,0,1-11.32,0l-56-56a8,8,0,0,1,11.32-11.32L96,188.69,218.34,66.34a8,8,0,0,1,11.32,11.32Z"/></svg>Kitchen job</span>
+              <span class="chip">Bathroom job</span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="lanes" aria-label="Example job board">
+        <div class="lane">
+          <span class="lane-name">Kitchen job</span>
+          <div class="lane-body">
+            <span class="slip in" data-at="1">Ridge Lumber<b>$149.99</b></span>
+            <span class="slip in" data-at="2">Oakline Supply<b>$412.18</b></span>
+          </div>
+          <!-- Total = $149.99 + $412.18, the app's example amounts (FACTS.md C3) -->
+          <p class="lane-total"><span>Total</span><b data-total="149.99:1,412.18:2">$562.17</b></p>
+        </div>
+        <div class="lane">
+          <span class="lane-name">Bathroom job</span>
+          <div class="lane-body">
+            <span class="slip in" data-at="3">Northside Hardware<b>$236.97</b></span>
+          </div>
+          <!-- Total = $236.97, the app's example amount (FACTS.md C3) -->
+          <p class="lane-total"><span>Total</span><b data-total="236.97:3">$236.97</b></p>
+        </div>
+      </div>
+      <p class="board-src">Say you have a kitchen job and a bathroom job going. Amounts: the app's example data.</p>
+    </div>
+  </div>
+
+  <div class="cta cta-hero">
+    <a class="btn btn-l" href="#start">Start free</a>
+    <p class="free">Free while we launch. No card.</p>
+    <p class="proof">Built in the Sacramento area with an HVAC contractor and an underground utilities crew.</p>
+  </div>
+
+  <ol class="steps">
+    <li class="step" data-step="1">
+      <span class="amt">Ridge Lumber · $149.99</span>
+      <h2>No job on it? One tap.</h2>
+      <p>Penny asks, you pick the kitchen job, and the receipt lands there with its charge.</p>
+    </li>
+    <li class="step" data-step="2">
+      <span class="amt">Mike's card · $412.18 at Oakline Supply</span>
+      <h2>No receipt? She asks who bought it.</h2>
+      <p>Penny asks Mike in the app, by email or, once he says yes, by text, then files his photo on the job.</p>
+    </li>
+    <li class="step" data-step="3">
+      <span class="amt">Northside Hardware · $236.97</span>
+      <h2>Got the receipt in hand?</h2>
+      <p>Snap a photo, forward the email or text it to Penny. She files it with its charge.</p>
+    </li>
+  </ol>
+</section>
+
+<section class="told" aria-labelledby="told-h">
+  <div class="wrap">
+    <div class="told-h">
+      <h2 id="told-h">She tells you when it lands.</h2>
+      <img class="pose" src="kit/penny/receipt.png" alt="" width="72" height="72">
+    </div>
+    <div class="told-pic">
+      <figure class="rh-app" role="img" aria-label="Penny's chat in the Receipt Hunter app: she tells the owner she asked Mike for the receipt for a $412.18 charge on Mike's card, and files it when his photo comes in">
+        <div class="a-head">
+          <span class="a-round"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M224,128a8,8,0,0,1-8,8H40a8,8,0,0,1,0-16H216A8,8,0,0,1,224,128ZM40,72H216a8,8,0,0,0,0-16H40a8,8,0,0,0,0,16ZM216,184H40a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Z"/></svg></span>
+          <span class="a-who"><img src="kit/penny/front.png" alt="" width="46" height="46"><span class="a-pill">Penny</span></span>
+          <span class="a-round"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M256,136a8,8,0,0,1-8,8H232v16a8,8,0,0,1-16,0V144H200a8,8,0,0,1,0-16h16V112a8,8,0,0,1,16,0v16h16A8,8,0,0,1,256,136Zm-57.870,58.85a8,8,0,0,1-12.26,10.3C165.75,181.19,138.09,168,108,168s-57.75,13.19-77.87,37.15a8,8,0,0,1-12.25-10.3c14.94-17.78,33.52-30.41,54.17-37.17a68,68,0,1,1,71.9,0C164.6,164.44,183.18,177.07,198.13,194.85ZM108,152a52,52,0,1,0-52-52A52.06,52.06,0,0,0,108,152Z"/></svg></span>
+        </div>
+        <div class="a-msgs">
+          <p class="a-time">Today, 4:12 PM</p>
+          <p class="a-penny">Mike's card: $412.18 at Oakline Supply. I asked Mike for the receipt in the app.</p>
+          <p class="a-time">4:31 PM</p>
+          <p class="a-penny">Mike's photo is in. It is for the kitchen job, and it matches the charge.</p>
+          <div class="a-card a-done">
+            <span class="a-card-top"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z"/></svg>Receipt in: $412.18 Oakline Supply</span>
+            <span class="a-sub">Kitchen job · matched to the card charge</span>
+          </div>
+          <p class="a-me">Great, thanks.</p>
+        </div>
+        <div class="a-composer"><span class="a-plus"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"/></svg></span><span class="a-ph">Message Penny</span><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M208,56H180.28L166.65,35.56A8,8,0,0,0,160,32H96a8,8,0,0,0-6.65,3.56L75.71,56H48A24,24,0,0,0,24,80V192a24,24,0,0,0,24,24H208a24,24,0,0,0,24-24V80A24,24,0,0,0,208,56Zm8,136a8,8,0,0,1-8,8H48a8,8,0,0,1-8-8V80a8,8,0,0,1,8-8H80a8,8,0,0,0,6.66-3.56L100.28,48h55.43l13.63,20.44A8,8,0,0,0,176,72h32a8,8,0,0,1,8,8ZM128,88a44,44,0,1,0,44,44A44.050,44.050,0,0,0,128,88Zm0,72a28,28,0,1,1,28-28A28,28,0,0,1,128,160Z"/></svg><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M128,176a48.05,48.05,0,0,0,48-48V64a48,48,0,0,0-96,0v64A48.05,48.05,0,0,0,128,176ZM96,64a32,32,0,0,1,64,0v64a32,32,0,0,1-64,0Zm40,143.6V240a8,8,0,0,1-16,0V207.6A80.11,80.11,0,0,1,48,128a8,8,0,0,1,16,0,64,64,0,0,0,128,0,8,8,0,0,1,16,0A80.11,80.11,0,0,1,136,207.6Z"/></svg></div>
+        <div class="a-tabs">
+          <div class="a-bar">
+            <span class="a-tab"><i class="red"></i><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M224,48H32A16,16,0,0,0,16,64V192a16,16,0,0,0,16,16H224a16,16,0,0,0,16-16V64A16,16,0,0,0,224,48Zm0,16V88H32V64Zm0,128H32V104H224v88Zm-16-24a8,8,0,0,1-8,8H168a8,8,0,0,1,0-16h32A8,8,0,0,1,208,168Zm-64,0a8,8,0,0,1-8,8H120a8,8,0,0,1,0-16h16A8,8,0,0,1,144,168Z"/></svg>Payments</span>
+            <span class="a-tab"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM224,48V208a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V48A16,16,0,0,1,48,32H208A16,16,0,0,1,224,48ZM208,208V48H48V208H208Z"/></svg>Asks</span>
+            <span class="a-tab"><i class="violet"></i><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M176,232a8,8,0,0,1-8,8H88a8,8,0,0,1,0-16h80A8,8,0,0,1,176,232Zm40-128a87.55,87.55,0,0,1-33.64,69.21A16.24,16.24,0,0,0,176,186v6a16,16,0,0,1-16,16H96a16,16,0,0,1-16-16v-6a16,16,0,0,0-6.230-12.66A87.59,87.59,0,0,1,40,104.49C39.74,56.83,78.26,17.14,125.88,16A88,88,0,0,1,216,104Zm-16,0a72,72,0,0,0-73.74-72c-39,.92-70.47,33.39-70.26,72.39a71.65,71.65,0,0,0,27.64,56.3A32,32,0,0,1,96,186v6h64v-6a32.15,32.15,0,0,1,12.47-25.35A71.65,71.65,0,0,0,200,104Zm-16.11-9.34a57.6,57.6,0,0,0-46.56-46.55,8,8,0,0,0-2.66,15.78c16.57,2.79,30.63,16.85,33.44,33.45A8,8,0,0,0,176,104a9,9,0,0,0,1.35-.11A8,8,0,0,0,183.89,94.66Z"/></svg>Ideas</span>
+            <span class="a-tab"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M224,200h-8V40a8,8,0,0,0-8-8H152a8,8,0,0,0-8,8V80H96a8,8,0,0,0-8,8v40H48a8,8,0,0,0-8,8v64H32a8,8,0,0,0,0,16H224a8,8,0,0,0,0-16ZM160,48h40V200H160ZM104,96h40V200H104ZM56,144H88v56H56Z"/></svg>Reports</span>
+          </div>
+          <span class="a-chat"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M128,24A104,104,0,0,0,36.18,176.88L24.83,210.930a16,16,0,0,0,20.240,20.240l34.05-11.35A104,104,0,1,0,128,24Zm0,192a87.87,87.87,0,0,1-44.06-11.81,8,8,0,0,0-6.54-.67L40,216,52.470,178.6a8,8,0,0,0-.66-6.54A88,88,0,1,1,128,216Z"/></svg></span>
+        </div>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- Quote slot: a first name, trade and one sentence, after written permission (website PRD section 10) -->
+
+<section class="close" id="start" aria-labelledby="close-h">
+  <div class="wrap">
+    <h2 id="close-h">Each receipt filed with its charge, on its job.</h2>
+    <div class="cta">
+      <a class="btn btn-l" href="#">Start free</a>
+      <p class="free">Free while we launch. No card.</p>
+    </div>
+    <p class="motion-line">This page moves on scroll: each step drops the next receipt into its job, and the job's total adds it up.</p>
+  </div>
+</section>
+</main>
+
+<script>
+(() => {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window)) return;
+  const board = document.querySelector('.board');
+  const slips = [...board.querySelectorAll('.slip')];
+  const pick = board.querySelector('[data-pick]');
+  const totals = [...board.querySelectorAll('[data-total]')].map((el) => ({
+    el, parts: el.dataset.total.split(',').map((p) => { const [v, at] = p.split(':'); return { v: +v, at: +at }; }), now: 0 }));
+  const fmt = (n) => '$' + n.toFixed(2);
+  const count = (t, to) => {
+    const from = t.now; t.now = to; const t0 = performance.now(); const id = t.id = (t.id || 0) + 1;
+    const tick = (ts) => { if (id !== t.id) return; const k = Math.max(0, Math.min(1, (ts - t0) / 480)); t.el.textContent = fmt(from + (to - from) * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(tick); };
+    requestAnimationFrame(tick);
+  };
+  let step = -1;
+  const set = (s) => {
+    if (s === step) return; step = s;
+    slips.forEach((el) => el.classList.toggle('in', +el.dataset.at <= s));
+    pick.classList.toggle('on', s >= 1);
+    totals.forEach((t) => count(t, t.parts.filter((p) => p.at <= s).reduce((a, p) => a + p.v, 0)));
+  };
+  document.documentElement.classList.add('sorting');
+  totals.forEach((t) => { t.el.textContent = fmt(0); });
+  set(0);
+  const steps = [...document.querySelectorAll('.step')];
+  const update = () => {
+    const wide = matchMedia('(min-width: 900px)').matches;
+    const under = document.querySelector('.board-col').getBoundingClientRect().bottom;
+    const line = wide ? innerHeight * 0.55 : under + (innerHeight - under) * 0.7; let s = 0;
+    steps.forEach((el) => { if (el.getBoundingClientRect().top < line) s = +el.dataset.step; });
+    set(s);
+  };
+  addEventListener('scroll', update, { passive: true });
+  addEventListener('resize', update);
+  update();
+})();
+</script>
+</body>
+</html>

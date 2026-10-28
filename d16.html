@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Direction 16: The answered letter</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<link rel="stylesheet" href="kit/tokens.css">
+<link rel="stylesheet" href="kit/app.css">
+<style>
+/* Direction 16, The answered letter.
+   Message: delete the "what was this charge?" email; Penny answers it before you send it.
+   Customer: a bookkeeper with 30 clients at month end (FACTS C2, framed as "Say you keep the books..."; never a real customer).
+   Idea: the whole page is one email draft from the bookkeeper to a client, on one sheet of paper. Every line of it is a question
+   a bookkeeper asks each month; the answers arrive in the sheet's margin as Penny's notes and the real app screens. When every
+   question is answered, the draft's Send button greys out: nothing left to send.
+   Structure: header; the sheet (headline and button on the sheet's top, the button in the margin at 1440); the email's To and Subject
+   with its Send button; three charge lines, each answered in the margin (the real chat, then two short notes); two more questions
+   answered in the margin (who made them, a login); the sign-off
+   "nothing left to ask"; below the sheet, the closing button, one quiet "Book a call" and the motion line.
+   On the phone the margin folds under each line as an indented note with a violet bar; at 900 px and up it is a real right margin.
+   Motion: plays by itself, once, on load: the three charge lines get a receipt and a tick one after another, then Send greys out.
+   With Reduce Motion or JavaScript off the page shows the answered state from the start.
+   Dark mode: the token file's dark values (--paper has a dark value there).
+   Proposed tokens:
+   --p-letter-font: 'Source Serif 4', a person's letter reads as writing, Penny's answers stay in Inter, the app's own voice; in grayscale the two voices still read apart.
+   --p-sheet: var(--paper), the warm sheet the letter is written on; --p-sheet-edge: var(--line-strong), its 1 px edge.
+   --p-fs-letter: clamp(1.0625rem, 1rem + 0.35vw, 1.25rem), 17 to 20 px, letter text a little larger than body so it reads as a page.
+   --p-margin-w: 360px, the right margin at 900 px and up, wide enough for the real chat at scale 0.88.
+   --p-note-bar: 2px solid var(--brand), the line that marks a margin note as Penny's (violet, the app's accent).
+   --p-arrive: 460ms cubic-bezier(0.2, 0.7, 0.2, 1), how a margin note arrives; --p-step: 1100ms between answers.
+   --p-sheet-shadow: 0 24px 48px -32px var(--shadow), lifts the sheet off the canvas without a glow. */
+:root {
+  --p-letter-font: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+  --p-sheet: var(--paper);
+  --p-sheet-edge: var(--line-strong);
+  --p-fs-letter: clamp(1.0625rem, 1rem + 0.35vw, 1.25rem);
+  --p-margin-w: 360px;
+  --p-note-bar: 2px solid var(--brand);
+  --p-arrive: 460ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  --p-step: 1100ms;
+  --p-sheet-shadow: 0 24px 48px -32px var(--shadow);
+}
+
+.wrap { width: 100%; max-width: calc(var(--page) + 2 * var(--gutter)); margin: 0 auto; padding: 0 var(--gutter); }
+body { background: var(--canvas); }
+
+/* Header */
+.site-head { height: 56px; }
+.site-head .wrap { height: 100%; display: flex; align-items: center; gap: 12px; }
+.brand { display: inline-flex; align-items: center; gap: 9px; text-decoration: none; color: var(--ink); font-weight: 700; font-size: 1.0625rem; letter-spacing: -0.01em; white-space: nowrap; }
+.brand svg { width: 22px; height: 22px; }
+.nav { display: none; margin-left: auto; gap: 30px; align-items: center; }
+.nav a { text-decoration: none; color: var(--ink-2); font-size: var(--fs-small); font-weight: 500; }
+.nav a:hover { color: var(--ink); }
+.head-actions { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; font-weight: 600;
+  background: var(--brand); color: var(--on-brand); border-radius: var(--r-full); white-space: nowrap; }
+.btn:hover { background: var(--brand-strong); }
+.btn-sm { height: 36px; padding: 0 16px; font-size: var(--fs-small); }
+.btn-lg { height: 52px; padding: 0 26px; font-size: 1.0625rem; }
+.btn-lg svg { width: 18px; height: 18px; }
+.menu { width: 40px; height: 40px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 50%; background: var(--canvas); color: var(--ink); }
+.menu svg { width: 20px; height: 20px; }
+
+/* The sheet: one letter for the whole page */
+.sheet { background: var(--p-sheet); border: 1px solid var(--p-sheet-edge); border-radius: var(--r-md); box-shadow: var(--p-sheet-shadow);
+  padding: 0 16px; margin: 4px 0 0; }
+.row > .say, .row > .ans { min-width: 0; }
+.row { padding: 18px 0; border-top: 1px solid var(--line); }
+.row.top { border-top: 0; padding-top: 26px; }
+
+/* Top of the sheet: the headline and the button */
+h1 { font-size: var(--fs-display); line-height: 1.04; letter-spacing: -0.035em; font-weight: 750; color: var(--ink); }
+.lead { margin-top: 14px; font-size: var(--fs-lead); line-height: 1.45; color: var(--ink-2); max-width: 36ch; }
+.cta { margin-top: 18px; display: grid; gap: 8px; justify-items: start; }
+.free { font-size: var(--fs-small); color: var(--ink-2); }
+.proof { font-size: var(--fs-micro); color: var(--ink-2); line-height: 1.45; max-width: 40ch; }
+
+/* The email's own head: To, Subject, Send */
+.mail { display: grid; grid-template-columns: auto 1fr auto; column-gap: 12px; row-gap: 6px; align-items: baseline;
+  font-size: var(--fs-small); color: var(--ink-2); }
+.mail b { font-weight: 500; color: var(--ink-3); }
+.mail span { color: var(--ink); }
+.send { grid-row: 1 / span 2; grid-column: 3; align-self: center; display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px;
+  border-radius: var(--r-full); font: 600 var(--fs-small) var(--font); border: 1px solid var(--line-strong); background: var(--recessed); color: var(--ink-3);
+  transition: background var(--p-arrive), color var(--p-arrive), border-color var(--p-arrive); }
+.send svg { width: 16px; height: 16px; }
+
+/* Letter text */
+.say { font-family: var(--p-letter-font); font-size: var(--p-fs-letter); line-height: 1.5; color: var(--paper-ink); }
+.say p + p { margin-top: 6px; }
+.q { display: flex; align-items: flex-start; gap: 12px; }
+.q .t { flex: 1; color: var(--paper-ink); }
+.q .t strong { font-weight: 600; }
+.mark { flex: none; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; position: relative; margin-top: -3px; }
+.mark .ask { position: absolute; inset: 0; display: grid; place-items: center; border-radius: 50%; background: var(--attention-tint); color: var(--attention);
+  font: 700 1.125rem var(--font); opacity: 0; transition: opacity var(--p-arrive); }
+.mark .got { position: absolute; inset: 0; display: grid; place-items: center; border-radius: 50%; background: var(--done-tint); color: var(--done-ink);
+  transition: opacity var(--p-arrive), transform var(--p-arrive); }
+.mark .got svg { width: 19px; height: 19px; }
+.mark .got i { position: absolute; right: -3px; bottom: -3px; width: 16px; height: 16px; border-radius: 50%; background: var(--done); color: var(--on-brand);
+  display: grid; place-items: center; box-shadow: 0 0 0 2px var(--p-sheet); }
+.mark .got i svg { width: 12px; height: 12px; }
+
+/* Margin notes: Penny's answers */
+.ans { margin-top: 12px; padding-left: 14px; border-left: var(--p-note-bar); font-size: var(--fs-small); line-height: 1.5; color: var(--ink);
+  transition: opacity var(--p-arrive), transform var(--p-arrive); }
+.ans p + p { margin-top: 6px; }
+.ans [data-step] { transition: opacity var(--p-arrive), transform var(--p-arrive); }
+.ans .line { margin-top: 12px; }
+.charges .q + .q { margin-top: 10px; }
+.ans .from { display: flex; align-items: center; gap: 8px; font-size: var(--fs-micro); font-weight: 600; color: var(--brand-strong); margin-bottom: 6px; }
+.ans .from img { width: 30px; height: 30px; }
+.ans .quiet { color: var(--ink-2); font-size: var(--fs-micro); }
+.ans .rh-app { --app-scale: 0.86; margin-top: 4px; box-shadow: 0 16px 32px -24px var(--shadow), 0 1px 4px var(--shadow-soft); }
+.ans .rh-app .a-me { display: none; }
+
+.sign .say p:last-child { color: var(--ink-2); }
+.note-ex { padding: 14px 0 18px; border-top: 1px solid var(--line); font-size: var(--fs-micro); color: var(--ink-3); }
+
+/* Below the sheet */
+.close { padding: 56px 0 28px; display: grid; gap: 14px; justify-items: start; }
+.close h2 { font-size: var(--fs-h2); line-height: 1.1; letter-spacing: -0.03em; font-weight: 750; }
+.close .who { display: flex; align-items: center; gap: 14px; }
+.close .who img { width: 76px; height: 76px; flex: none; }
+.close .call { font-size: var(--fs-small); color: var(--ink-2); }
+.close .call a { color: var(--brand-strong); font-weight: 600; }
+.motion { padding: 8px 0 40px; font-size: var(--fs-micro); color: var(--ink-3); }
+
+/* The once-only play: only with JavaScript on and Reduce Motion off (the script adds .play) */
+.play .q[data-step]:not(.in) .mark .ask { opacity: 1; }
+.play .q[data-step]:not(.in) .mark .got { opacity: 0; transform: scale(0.6); }
+.play .ans [data-step]:not(.in) { opacity: 0; transform: translateY(8px); }
+.play .send:not(.done) { background: var(--brand); border-color: var(--brand); color: var(--on-brand); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+@media (min-width: 520px) {
+  .sheet { padding: 0 28px; }
+}
+@media (min-width: 720px) {
+  .sheet { padding: 0 40px; }
+  .lead { max-width: 40ch; }
+}
+@media (min-width: 900px) {
+  .site-head { height: var(--header-h); }
+  .nav { display: flex; }
+  .head-actions { margin-left: 22px; }
+  .menu { display: none; }
+  .sheet { padding: 0 0 0 56px; margin-top: 16px; border-radius: var(--r-card); }
+  .row { display: grid; grid-template-columns: minmax(0, 1fr) var(--p-margin-w); column-gap: 0; padding: 0; }
+  .row > .say, .row > .top-l, .row > .mail { padding: 26px 48px 26px 0; }
+  .row > .ans, .row > .top-r, .row > .gap { margin: 0; padding: 26px 32px; border-left: var(--p-note-bar); align-self: stretch; }
+  .row.top > * { padding-top: 64px; padding-bottom: 48px; }
+  .top-r { display: flex; flex-direction: column; justify-content: flex-end; }
+  .top-r .cta { margin-top: 0; }
+  .ans .rh-app { --app-scale: 0.8; } /* keeps the Penny pill at 11 px or more */
+  h1 { font-size: clamp(2.25rem, 0.25rem + 3.75vw, 3.5rem); }
+  h1 span { display: block; }
+  .row > .say > * { position: sticky; top: 96px; }
+  .row > .say { --p-fs-letter: 1.25rem; }
+  .charges .say > p, .sign .say > p { position: static; }
+  .charges .say { align-self: start; position: sticky; top: 96px; }
+  .charges .say > * { position: static; }
+  .note-ex { padding: 18px 0 22px; }
+  .close { grid-template-columns: 1fr auto; align-items: end; padding-top: 72px; }
+  .close .who { grid-column: 1 / -1; }
+}
+</style>
+</head>
+<body>
+<header class="site-head">
+  <div class="wrap">
+    <a class="brand" href="#"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 86.06 88.29" fill="currentColor"><path d="M48.55,0v22.07c12.19,0,22.07,9.88,22.07,22.07h0c0,12.19-9.88,22.07-22.07,22.07v22.07h37.51V.02h-37.51,0Z"/><path d="M15.45,0H0v88.27h37.51v-22.07c-12.19,0-22.07-9.88-22.07-22.07h0c12.19,0,22.07-9.88,22.07-22.07h0C37.51,9.88,27.63,0,15.44,0h.01Z"/></svg>Receipt Hunter</a>
+    <nav class="nav" aria-label="Main">
+      <a href="#how">How it works</a><a href="#">Pricing</a><a href="#bookkeepers">For bookkeepers</a><a href="#">Sign in</a>
+    </nav>
+    <div class="head-actions">
+      <a class="btn btn-sm" href="#">Start free</a>
+      <button class="menu" type="button" aria-label="Menu"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M224,128a8,8,0,0,1-8,8H40a8,8,0,0,1,0-16H216A8,8,0,0,1,224,128ZM40,72H216a8,8,0,0,0,0-16H40a8,8,0,0,0,0,16ZM216,184H40a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Z"/></svg></button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <article class="sheet" id="bookkeepers" aria-label="A month-end email from a bookkeeper to a client, answered by Penny in the margin">
+
+    <div class="row top">
+      <div class="top-l">
+        <h1><span>Delete the</span> <span>'what was this charge?'</span> <span>email.</span></h1>
+        <!-- 30 clients: FACTS.md C2 (example case, ours) -->
+        <p class="lead">Say you keep the books for 30 clients. Here is the month-end email, answered before you send it.</p>
+      </div>
+      <div class="top-r">
+        <div class="cta">
+          <a class="btn btn-lg" href="#">Start free<svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z"/></svg></a>
+          <p class="free">Free while we launch. No card.</p>
+          <p class="proof">Built in the Sacramento area with an HVAC contractor and an underground utilities crew.</p>
+          <!-- Quote slot: a first name, trade and one sentence, after written permission (website PRD section 10) -->
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="mail">
+        <b>To</b><span>Sam</span>
+        <b>Subject</b><span>October: three charges with no receipt</span>
+        <button class="send" type="button" aria-disabled="true" disabled><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M227.32,28.68a16,16,0,0,0-15.66-4.08l-.15,0L19.57,82.84a16,16,0,0,0-2.49,29.8L102,154l41.3,84.87A15.86,15.86,0,0,0,157.74,248q.69,0,1.38-.06a15.88,15.88,0,0,0,14-11.51l58.2-191.94c0-.05,0-.1,0-.15A16,16,0,0,0,227.32,28.68ZM157.83,231.85l-.05.14,0-.07-40.06-82.3,48-48a8,8,0,0,0-11.31-11.31l-48,48L24.08,98.25l-.07,0,.14,0L216,40Z"/></svg>Send</button>
+      </div>
+      <div class="gap" aria-hidden="true"></div>
+    </div>
+
+    <!-- Charges, names and times: FACTS.md C3 (the app's own example data, ours) -->
+    <div class="row charges">
+      <div class="say">
+        <p>Hi Sam,</p>
+        <div class="q" data-step="1"><p class="t">What was <strong>$412.18 at Oakline Supply</strong> on Mike's card?</p>
+          <span class="mark" aria-hidden="true"><span class="ask">?</span><span class="got"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M72,104a8,8,0,0,1,8-8h96a8,8,0,0,1,0,16H80A8,8,0,0,1,72,104Zm8,40h96a8,8,0,0,0,0-16H80a8,8,0,0,0,0,16ZM232,56V208a8,8,0,0,1-11.58,7.15L192,200.94l-28.42,14.21a8,8,0,0,1-7.16,0L128,200.94,99.58,215.15a8,8,0,0,1-7.16,0L64,200.94,35.58,215.15A8,8,0,0,1,24,208V56A16,16,0,0,1,40,40H216A16,16,0,0,1,232,56Zm-16,0H40V195.06l20.42-10.22a8,8,0,0,1,7.16,0L96,199.06l28.42-14.22a8,8,0,0,1,7.16,0L160,199.06l28.42-14.22a8,8,0,0,1,7.16,0L216,195.06Z"/></svg><i><svg viewBox="0 0 256 256" fill="currentColor"><path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34Z"/></svg></i></span></span>
+        </div>
+        <div class="q" data-step="2"><p class="t">And <strong>$236.97 at Northside Hardware</strong>?</p>
+          <span class="mark" aria-hidden="true"><span class="ask">?</span><span class="got"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M72,104a8,8,0,0,1,8-8h96a8,8,0,0,1,0,16H80A8,8,0,0,1,72,104Zm8,40h96a8,8,0,0,0,0-16H80a8,8,0,0,0,0,16ZM232,56V208a8,8,0,0,1-11.58,7.15L192,200.94l-28.42,14.21a8,8,0,0,1-7.16,0L128,200.94,99.58,215.15a8,8,0,0,1-7.16,0L64,200.94,35.58,215.15A8,8,0,0,1,24,208V56A16,16,0,0,1,40,40H216A16,16,0,0,1,232,56Zm-16,0H40V195.06l20.42-10.22a8,8,0,0,1,7.16,0L96,199.06l28.42-14.22a8,8,0,0,1,7.16,0L160,199.06l28.42-14.22a8,8,0,0,1,7.16,0L216,195.06Z"/></svg><i><svg viewBox="0 0 256 256" fill="currentColor"><path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34Z"/></svg></i></span></span>
+        </div>
+        <div class="q" data-step="3"><p class="t">And <strong>$149.99 at Ridge Lumber</strong>, which job?</p>
+          <span class="mark" aria-hidden="true"><span class="ask">?</span><span class="got"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M72,104a8,8,0,0,1,8-8h96a8,8,0,0,1,0,16H80A8,8,0,0,1,72,104Zm8,40h96a8,8,0,0,0,0-16H80a8,8,0,0,0,0,16ZM232,56V208a8,8,0,0,1-11.58,7.15L192,200.94l-28.42,14.21a8,8,0,0,1-7.16,0L128,200.94,99.58,215.15a8,8,0,0,1-7.16,0L64,200.94,35.58,215.15A8,8,0,0,1,24,208V56A16,16,0,0,1,40,40H216A16,16,0,0,1,232,56Zm-16,0H40V195.06l20.42-10.22a8,8,0,0,1,7.16,0L96,199.06l28.42-14.22a8,8,0,0,1,7.16,0L160,199.06l28.42-14.22a8,8,0,0,1,7.16,0L216,195.06Z"/></svg><i><svg viewBox="0 0 256 256" fill="currentColor"><path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34Z"/></svg></i></span></span>
+        </div>
+      </div>
+      <div class="ans">
+        <div data-step="1">
+        <p class="from"><img src="kit/penny/reading.png" alt="" width="30" height="30">Penny</p>
+<!-- RH app screen: the hero chat. Copy as is; only the frame around .rh-app may change. -->
+<figure class="rh-app no-bars" role="img" aria-label="Penny's chat in the Receipt Hunter app: she tells the owner she asked Mike for the receipt for a $412.18 charge on Mike's card, and files it when his photo comes in">
+  <div class="a-head">
+    <span class="a-round"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M224,128a8,8,0,0,1-8,8H40a8,8,0,0,1,0-16H216A8,8,0,0,1,224,128ZM40,72H216a8,8,0,0,0,0-16H40a8,8,0,0,0,0,16ZM216,184H40a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Z"/></svg></span>
+    <span class="a-who"><img src="kit/penny/front.png" alt="" width="46" height="46"><span class="a-pill">Penny</span></span>
+    <span class="a-round"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M256,136a8,8,0,0,1-8,8H232v16a8,8,0,0,1-16,0V144H200a8,8,0,0,1,0-16h16V112a8,8,0,0,1,16,0v16h16A8,8,0,0,1,256,136Zm-57.87,58.85a8,8,0,0,1-12.26,10.3C165.75,181.19,138.09,168,108,168s-57.75,13.19-77.87,37.15a8,8,0,0,1-12.25-10.3c14.94-17.78,33.52-30.41,54.17-37.17a68,68,0,1,1,71.9,0C164.6,164.44,183.18,177.07,198.13,194.85ZM108,152a52,52,0,1,0-52-52A52.06,52.06,0,0,0,108,152Z"/></svg></span>
+  </div>
+  <div class="a-msgs">
+    <p class="a-time">Today, 4:12 PM</p>
+    <p class="a-penny">Mike's card: $412.18 at Oakline Supply. I asked Mike for the receipt in the app.</p>
+    <p class="a-time">4:31 PM</p>
+    <p class="a-penny">Mike's photo is in. It is for the kitchen job, and it matches the charge.</p>
+    <div class="a-card a-done">
+      <span class="a-card-top"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z"/></svg>Receipt in: $412.18 Oakline Supply</span>
+      <span class="a-sub">Kitchen job · matched to the card charge</span>
+    </div>
+    <p class="a-me">Great, thanks.</p>
+  </div>
+</figure>
+        </div>
+        <p class="line" data-step="2"><strong>Northside Hardware:</strong> receipt in, filed with its charge.</p>
+        <p class="line" data-step="3"><strong>Ridge Lumber:</strong> receipt in, matched to its charge. Penny asks Sam to pick the job.</p>
+      </div>
+    </div>
+
+    <div class="row" id="how">
+      <div class="say"><div class="q"><p class="t">Who on your team made them?</p><span class="mark" aria-hidden="true"><span class="ask">?</span><span class="got"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M72,104a8,8,0,0,1,8-8h96a8,8,0,0,1,0,16H80A8,8,0,0,1,72,104Zm8,40h96a8,8,0,0,0,0-16H80a8,8,0,0,0,0,16ZM232,56V208a8,8,0,0,1-11.58,7.15L192,200.94l-28.42,14.21a8,8,0,0,1-7.16,0L128,200.94,99.58,215.15a8,8,0,0,1-7.16,0L64,200.94,35.58,215.15A8,8,0,0,1,24,208V56A16,16,0,0,1,40,40H216A16,16,0,0,1,232,56Zm-16,0H40V195.06l20.42-10.22a8,8,0,0,1,7.16,0L96,199.06l28.42-14.22a8,8,0,0,1,7.16,0L160,199.06l28.42-14.22a8,8,0,0,1,7.16,0L216,195.06Z"/></svg><i><svg viewBox="0 0 256 256" fill="currentColor"><path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34Z"/></svg></i></span></span></div></div>
+      <div class="ans"><p>Penny asks each client's people for their own charges, in their app or by email, and by text once they say yes.</p></div>
+    </div>
+
+    <div class="row">
+      <div class="say"><div class="q"><p class="t">Can I log in and see the receipts myself?</p><span class="mark" aria-hidden="true"><span class="ask">?</span><span class="got"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M72,104a8,8,0,0,1,8-8h96a8,8,0,0,1,0,16H80A8,8,0,0,1,72,104Zm8,40h96a8,8,0,0,0,0-16H80a8,8,0,0,0,0,16ZM232,56V208a8,8,0,0,1-11.58,7.15L192,200.94l-28.42,14.21a8,8,0,0,1-7.16,0L128,200.94,99.58,215.15a8,8,0,0,1-7.16,0L64,200.94,35.58,215.15A8,8,0,0,1,24,208V56A16,16,0,0,1,40,40H216A16,16,0,0,1,232,56Zm-16,0H40V195.06l20.42-10.22a8,8,0,0,1,7.16,0L96,199.06l28.42-14.22a8,8,0,0,1,7.16,0L160,199.06l28.42-14.22a8,8,0,0,1,7.16,0L216,195.06Z"/></svg><i><svg viewBox="0 0 256 256" fill="currentColor"><path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34Z"/></svg></i></span></span></div></div>
+      <div class="ans">
+        <p>One free bookkeeper login per company.</p>
+        <p class="quiet">Every document and its history, viewing, search, export and your bookkeeper's login stay free, even if you stop paying.</p>
+      </div>
+    </div>
+
+    <div class="row sign">
+      <div class="say"><p>Thanks,</p><p>your bookkeeper</p></div>
+      <div class="ans"><p><strong>Nothing left to ask.</strong> Delete the draft.</p></div>
+    </div>
+
+    <p class="note-ex">An example: Sam, Mike, the charges and the times are the app's sample data.</p>
+  </article>
+
+  <section class="close" aria-label="Start free">
+    <div class="who"><img src="kit/penny/sending.png" alt="" width="76" height="76"><h2>Let Penny answer your next month end.</h2></div>
+    <div class="cta">
+      <a class="btn btn-lg" href="#">Start free<svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z"/></svg></a>
+      <p class="free">Free while we launch. No card.</p>
+    </div>
+    <p class="call">Many clients to move over? <a href="#">Book a call</a></p>
+  </section>
+  <p class="motion">This page plays by itself: once, on load, the three charges get their receipts one by one, then Send greys out.</p>
+</main>
+
+<script>
+(() => {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const root = document.documentElement;
+  const steps = [1, 2, 3].map((n) => document.querySelectorAll('[data-step="' + n + '"]'));
+  const send = document.querySelector('.send');
+  const step = 1100, start = 900;
+  root.classList.add('play');
+  steps.forEach((els, i) => setTimeout(() => els.forEach((e) => e.classList.add('in')), start + i * step));
+  setTimeout(() => send.classList.add('done'), start + steps.length * step);
+})();
+</script>
+</body>
+</html>

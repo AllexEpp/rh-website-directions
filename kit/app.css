@@ -1,0 +1,68 @@
+/* The real Receipt Hunter chat screen, drawn in HTML (Oct 27, 2026), as the app shows it
+   (product/lite/design/reference-v7/CHAT-LIST__with-history and CHAT-TALK__plain-answer, light and dark;
+   Lite PRD section 7): round menu button, Penny with her name pill, Add a person; Penny's words as plain text,
+   the user's words in a grey bubble, cards with a hairline; the composer with +, camera and mic;
+   the tab bar Payments, Asks, Ideas, Reports and the Chat circle. No phone bezel, no status bar.
+   A direction may change only the frame around .rh-app (size, shadow, border radius, the surface behind it),
+   never what is inside. Width: 320 to 390 px; it scales with --app-scale (default 1). */
+
+.rh-app {
+  --a-fs: calc(15px * var(--app-scale, 1));
+  width: 100%; max-width: calc(375px * var(--app-scale, 1));
+  background: var(--canvas); color: var(--ink);
+  border: 1px solid var(--line); border-radius: calc(32px * var(--app-scale, 1));
+  box-shadow: 0 30px 60px -30px var(--shadow), 0 2px 6px var(--shadow-soft);
+  overflow: hidden; font-family: var(--font); font-size: var(--a-fs); line-height: 1.38;
+  display: flex; flex-direction: column; margin: 0; align-self: flex-start;
+}
+.rh-app svg { width: 1.45em; height: 1.45em; flex: none; }
+.rh-app .a-head { display: grid; grid-template-columns: auto 1fr auto; align-items: start; padding: 1em 1em 0.4em; }
+.rh-app .a-round { width: 2.9em; height: 2.9em; border-radius: 50%; display: grid; place-items: center;
+  background: var(--canvas); box-shadow: 0 1px 8px var(--shadow-soft); border: 1px solid var(--line); color: var(--ink); }
+.rh-app .a-round svg { width: 1.35em; height: 1.35em; }
+.rh-app .a-who { display: grid; justify-items: center; gap: 0; }
+.rh-app .a-who img { width: 2.9em; height: 2.9em; object-fit: contain; }
+.rh-app .a-pill { margin-top: -0.35em; padding: 0.22em 0.8em; border-radius: var(--r-full); background: var(--canvas);
+  box-shadow: 0 1px 8px var(--shadow-soft); font-weight: 600; font-size: 0.93em; }
+.rh-app .a-msgs { display: flex; flex-direction: column; gap: 0.7em; padding: 0.6em 1em 0.9em; }
+.rh-app .a-time { text-align: center; font-size: max(11px, 0.8em); color: var(--ink-3); margin: 0.2em 0; }
+.rh-app .a-penny { align-self: flex-start; max-width: 92%; }
+.rh-app .a-me { align-self: flex-end; max-width: 80%; background: var(--recessed); border-radius: 1.3em; padding: 0.55em 0.95em; }
+.rh-app .a-card { border: 1px solid var(--line); border-radius: 1.1em; padding: 0.8em 0.9em; display: grid; gap: 0.25em; }
+.rh-app .a-card-top { display: flex; align-items: center; gap: 0.45em; font-weight: 600; }
+.rh-app .a-dot { width: 0.5em; height: 0.5em; border-radius: 50%; background: var(--attention); flex: none; }
+.rh-app .a-sub { font-size: max(11px, 0.82em); color: var(--ink-2); }
+.rh-app .a-step { display: flex; align-items: center; gap: 0.4em; font-size: 0.86em; color: var(--ink-2); }
+.rh-app .a-step svg { width: 1.1em; height: 1.1em; color: var(--ink-3); }
+.rh-app .a-done { background: var(--done-tint); border-color: transparent; }
+.rh-app .a-done .a-card-top svg { color: var(--done); width: 1.3em; height: 1.3em; }
+.rh-app .a-label { display: flex; align-items: center; gap: 0.4em; font-size: max(11px, 0.74em); font-weight: 600; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--ink-2); }
+.rh-app .a-label svg { width: 1.15em; height: 1.15em; }
+.rh-app .a-brief-title { font-weight: 650; font-size: 1.02em; line-height: 1.3; margin: 0.15em 0 0.2em; }
+.rh-app .a-row { display: flex; align-items: center; gap: 0.6em; padding: 0.6em 0; border-top: 1px solid var(--line); }
+.rh-app .a-row > span:not(.a-dot) { flex: 1; }
+.rh-app .a-row svg { width: 1em; height: 1em; color: var(--ink-3); }
+.rh-app .a-row .a-dot.wait { background: var(--waiting); }
+.rh-app .a-row .a-dot.ok { background: var(--done); }
+.rh-app .a-link { color: var(--brand); font-weight: 600; display: inline-flex; align-items: center; gap: 0.3em; padding-top: 0.3em; }
+.rh-app .a-link svg { width: 1em; height: 1em; }
+.rh-app .a-composer { margin: 0 0.75em 0.5em; display: flex; align-items: center; gap: 0.6em; padding: 0.4em 0.75em 0.4em 0.4em;
+  border: 1px solid var(--line); border-radius: var(--r-full); box-shadow: 0 1px 8px var(--shadow-soft); color: var(--ink); }
+.rh-app .a-plus { width: 2.2em; height: 2.2em; border-radius: 50%; background: var(--recessed); display: grid; place-items: center; }
+.rh-app .a-plus svg { width: 1.2em; height: 1.2em; }
+.rh-app .a-composer .a-ph { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--placeholder); }
+.rh-app .a-composer svg { width: 1.3em; height: 1.3em; }
+.rh-app .a-tabs { display: flex; gap: 0.5em; align-items: center; padding: 0 0.6em 0.8em; }
+.rh-app .a-bar { flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); padding: 0.45em 0.2em;
+  border: 1px solid var(--line); border-radius: var(--r-full); box-shadow: 0 1px 8px var(--shadow-soft); }
+.rh-app .a-tab { display: grid; justify-items: center; gap: 0.1em; font-size: max(11px, 0.74em); font-weight: 500; color: var(--ink-2); position: relative; } /* the website floor is 11 px */
+.rh-app .a-tab svg { width: 2em; height: 2em; color: var(--ink); }
+.rh-app .a-tab i { position: absolute; top: 0; right: 22%; width: 0.75em; height: 0.75em; border-radius: 50%; }
+.rh-app .a-tab i.red { background: var(--attention); }
+.rh-app .a-tab i.violet { background: var(--brand); }
+.rh-app .a-chat { width: 3.6em; height: 3.6em; border-radius: 50%; display: grid; place-items: center; color: var(--brand);
+  background: var(--recessed); border: 1px solid var(--line); box-shadow: 0 1px 8px var(--shadow-soft); }
+.rh-app .a-chat svg { width: 1.6em; height: 1.6em; }
+/* Crop: on a short first screen a direction may hide the bottom bars with .rh-app.no-bars */
+.rh-app.no-bars .a-composer, .rh-app.no-bars .a-tabs { display: none; }
