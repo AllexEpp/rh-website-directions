@@ -3,7 +3,6 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex, nofollow">
 <title>Direction 7: Penny up front</title>
 <link rel="stylesheet" href="kit/tokens.css">
 <link rel="stylesheet" href="kit/app.css">
@@ -76,7 +75,7 @@
   background: var(--brand-tint); z-index: -2; }
 .stage > .mint { position: absolute; z-index: -1; right: 28px; top: 0; width: calc(var(--p-penny-hero) + 40px); height: 150px;
   background: var(--teal-tint); border-radius: var(--p-r-shape) var(--p-r-shape) var(--r-lg) var(--r-lg); }
-.stage > .penny { order: -1; width: var(--p-penny-hero); height: var(--p-penny-hero); align-self: flex-end;
+.stage > .penny { order: -1; width: var(--p-penny-hero); height: var(--p-penny-hero); max-width: none; align-self: flex-end;
   margin: 0 48px -12px 0; position: relative; z-index: 1; }
 .stage .shot { height: 372px; overflow: hidden; border-radius: 30px 30px 0 0; }
 .stage .rh-app { --app-scale: 0.92; max-width: none; border-bottom-left-radius: 0; border-bottom-right-radius: 0;
@@ -117,7 +116,7 @@
 .board::before { content: ""; position: absolute; inset: 40px 0 0 0; border-radius: var(--p-r-shape); background: var(--teal-tint); z-index: -2; }
 .board > .violet { position: absolute; z-index: -1; left: 28px; top: 0; width: calc(var(--p-penny-below) + 40px); height: 130px;
   background: var(--brand-tint); border-radius: var(--p-r-shape) var(--p-r-shape) var(--r-lg) var(--r-lg); }
-.board > .penny { width: var(--p-penny-below); height: var(--p-penny-below); margin: 0 0 -10px 48px; position: relative; z-index: 1; }
+.board > .penny { width: var(--p-penny-below); height: var(--p-penny-below); max-width: none; margin: 0 0 -10px 48px; position: relative; z-index: 1; }
 .board .rh-app { --app-scale: 0.92; max-width: none; }
 
 @media (min-width: 900px) {
